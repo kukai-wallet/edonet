@@ -1,1 +1,1 @@
-# edonet
+# edonet.kukai.app
