@@ -16078,7 +16078,7 @@ class UriHandlerComponent {
             this.beaconService.client
                 .connect((message) => Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
                 console.log('### beacon message', message);
-                if (message.type !== _airgap_beacon_sdk__WEBPACK_IMPORTED_MODULE_4__["BeaconMessageType"].SignPayloadRequest && message.network.type !== _environments_environment__WEBPACK_IMPORTED_MODULE_6__["CONSTANTS"].NETWORK) {
+                if (message.type !== _airgap_beacon_sdk__WEBPACK_IMPORTED_MODULE_4__["BeaconMessageType"].SignPayloadRequest && message.network.type.replace('edo2net', 'edonet') !== _environments_environment__WEBPACK_IMPORTED_MODULE_6__["CONSTANTS"].NETWORK) {
                     console.warn(`Rejecting Beacon message because of network. Expected ${_environments_environment__WEBPACK_IMPORTED_MODULE_6__["CONSTANTS"].NETWORK} instead of ${message.network.type}`);
                     yield this.beaconService.rejectOnNetwork(message);
                 }
