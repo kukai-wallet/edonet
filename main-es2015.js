@@ -5645,7 +5645,7 @@ class TokenService {
     constructor(indexerService) {
         this.indexerService = indexerService;
         this.AUTO_DISCOVER = true;
-        this.version = '1.0.3';
+        this.version = '1.0.5';
         this.contracts = {};
         this.exploredIds = {};
         this.storeKey = 'tokenMetadata';
@@ -5758,7 +5758,7 @@ class TokenService {
         else {
             const token = this.exploredIds[tokenId];
             const timeout = (token.lastCheck - token.firstCheck) > 600000;
-            const reCheck = (now - token.lastCheck) > 2000;
+            const reCheck = (now - token.lastCheck) > 15000;
             if (timeout || !reCheck) {
                 return false;
             }
@@ -6669,7 +6669,7 @@ function SendComponent_div_1_div_9_ng_template_11_Template(rf, ctx) { if (rf & 1
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](0, "img", 72);
 } if (rf & 2) {
     const ctx_r77 = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵnextContext"](3);
-    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵpropertyInterpolate"]("src", ctx_r77.tokenService.getAsset(ctx_r77.tokenTransfer).thumbnailUrl, _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵsanitizeUrl"]);
+    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵpropertyInterpolate"]("src", ctx_r77.tokenService.getAsset(ctx_r77.tokenTransfer).displayUrl, _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵsanitizeUrl"]);
 } }
 function SendComponent_div_1_div_9_ng_container_13_span_1_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](0, "span", 76);
@@ -11336,9 +11336,9 @@ class TzktService {
                 console.log(`No contract metadata found for ${contractAddress}:${id}`);
                 return {};
             });
-            const tokenMetadata = fetch(`${this.bcd}/contract/${this.network}/${contractAddress}/tokens`)
+            const tokenMetadata = fetch(`${this.bcd}/contract/${this.network}/${contractAddress}/tokens?size=1000000`)
                 .then(response => response.json())
-                .then(datas => {
+                .then((datas) => Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
                 const keys = [
                     { key: 'name', type: 'string' },
                     { key: 'decimals', type: 'number' },
@@ -11353,6 +11353,7 @@ class TzktService {
                 ];
                 for (const data of datas) {
                     if ((data === null || data === void 0 ? void 0 : data.token_id) === Number(id)) {
+                        const rawData = JSON.parse(JSON.stringify(data));
                         this.flattern(data);
                         const metadata = {};
                         for (const a of keys) {
@@ -11361,17 +11362,25 @@ class TzktService {
                             }
                         }
                         if (metadata.displayUri) {
-                            metadata.displayUri = this.uriToUrl(metadata.displayUri);
+                            metadata.displayUri = yield this.uriToUrl(metadata.displayUri);
                         }
                         if (metadata.thumbnailUri) {
-                            metadata.thumbnailUri = this.uriToUrl(metadata.thumbnailUri);
+                            metadata.thumbnailUri = yield this.uriToUrl(metadata.thumbnailUri);
+                        }
+                        if (!metadata.displayUri && (data === null || data === void 0 ? void 0 : data.symbol) === 'OBJKT') { // Exception for hicetnunc
+                            try {
+                                if (['image/png', 'image/jpg', 'image/jpeg'].includes(rawData.token_info.formats[0].mimeType)) {
+                                    metadata.displayUri = yield this.uriToUrl(rawData.token_info.formats[0].uri);
+                                }
+                            }
+                            catch (e) { }
                         }
                         return metadata;
                     }
                 }
                 console.log(`No token metadata found for ${contractAddress}:${id}`);
                 return {};
-            }).catch(e => {
+            })).catch(e => {
                 return {};
             });
             const ans = yield Promise.all([contractMetadata, tokenMetadata, tokenKind])
@@ -11431,7 +11440,7 @@ class TzktService {
                                 console.log('token_metadata_map', child2.children);
                                 for (const child3 of child2.children) {
                                     if (!child3.name || child3.name === '""') {
-                                        url = this.uriToUrl(child3.value);
+                                        url = yield this.uriToUrl(child3.value);
                                     }
                                     else {
                                         for (const key of lookFor.strings) {
@@ -11476,7 +11485,7 @@ class TzktService {
                     delete metadata['displayURI'];
                 }
                 if (metadata['displayUri']) {
-                    metadata['displayUri'] = this.uriToUrl(metadata['displayUri']);
+                    metadata['displayUri'] = yield this.uriToUrl(metadata['displayUri']);
                 }
                 return metadata;
             }
@@ -11511,7 +11520,7 @@ class TzktService {
                 delete metadata['displayURI'];
             }
             if (metadata['displayUri']) {
-                metadata['displayUri'] = this.uriToUrl(metadata['displayUri']);
+                metadata['displayUri'] = yield this.uriToUrl(metadata['displayUri']);
             }
             if (metadata.decimals === undefined) {
                 metadata.decimals = 0;
@@ -11527,7 +11536,7 @@ class TzktService {
             try {
                 for (const child of contractBigMap) {
                     if (child.data.key.value === '') {
-                        url = this.uriToUrl(child.data.value.value);
+                        url = yield this.uriToUrl(child.data.value.value);
                         break;
                     }
                 }
@@ -11598,24 +11607,23 @@ class TzktService {
         });
     }
     uriToUrl(uri) {
-        if (uri && uri.length > 7) {
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
+            if (!uri || uri.length < 8) {
+                return '';
+            }
+            let url = '';
             if (uri.startsWith('ipfs://')) {
-                return `https://cloudflare-ipfs.com/ipfs/${uri.slice(7)}`;
+                url = `https://cloudflare-ipfs.com/ipfs/${uri.slice(7)}`;
             }
             else if (uri.startsWith('https://')) {
-                return uri;
+                url = uri;
             }
             else if (!_environments_environment__WEBPACK_IMPORTED_MODULE_2__["CONSTANTS"].MAINNET && (uri.startsWith('http://localhost') || uri.startsWith('http://127.0.0.1'))) {
-                return uri;
+                url = uri;
             }
-            else {
-                console.warn('wrong prefix', uri);
-            }
-        }
-        else {
-            console.warn('No uri');
-        }
-        return '';
+            const cacheUrl = yield this.fetchApi(`https://www.tezos.help/api/img-proxy/?url=${url}`);
+            return cacheUrl ? cacheUrl : '';
+        });
     }
     fetchApi(url) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
