@@ -5577,7 +5577,8 @@ const TRUSTED_TOKEN_CONTRACTS = [
     'KT1T66r244FFuH2hpfZgoKVRLXDtnfjBRxVc',
     'KT1XgGvzQSYrvo4NCxwTvJ7tSbZqGcji4BeV',
     'KT1GhzeDu852VfxHQT3AnnUu2U1q4GnVTYJv',
-    'KT1R3TqdxsHPYxNQBdY7jmXAeU17WpucMXDh'
+    'KT1R3TqdxsHPYxNQBdY7jmXAeU17WpucMXDh',
+    'KT1RUSCZ7pJ3WNTuXFD44UpStmNRjA459guZ'
 ];
 
 
@@ -12143,6 +12144,8 @@ class EstimateService {
         if (entrypoint && destination) {
             switch (`${destination}:${entrypoint}`) {
                 case 'KT1TWb6cE56q2L8yTeNNchXqDSXacrNqyVNZ:reward':
+                    return { gasUsage: 59920, storageUsage: 150 };
+                case 'KT1RUSCZ7pJ3WNTuXFD44UpStmNRjA459guZ:reward':
                     return { gasUsage: 59920, storageUsage: 150 };
             }
         }
