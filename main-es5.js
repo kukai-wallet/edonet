@@ -12061,11 +12061,9 @@
                         this.validateBatch();
                       } else {
                         tokenTransfer = this.beaconTokenTransfer(this.operationRequest.operationDetails[0]);
-                        console.log('tokenTransfer', tokenTransfer);
 
                         if (tokenTransfer) {
                           asset = this.tokenService.getAsset(tokenTransfer.tokenId);
-                          console.log('asset', asset);
                           this.amount = big_js__WEBPACK_IMPORTED_MODULE_9___default()(tokenTransfer.amount).div(Math.pow(10, asset.decimals)).toFixed();
                           this.toPkh = tokenTransfer.to;
                           this.tokenTransfer = tokenTransfer.tokenId;
@@ -12112,7 +12110,11 @@
           key: "beaconTokenTransfer",
           value: function beaconTokenTransfer(op) {
             if (op.parameters && this.tokenService.isKnownTokenContract(op.destination)) {
-              return this.operationService.parseTokenTransfer(op);
+              var tokenTransfer = this.operationService.parseTokenTransfer(op);
+
+              if (tokenTransfer && this.tokenService.isKnownTokenId(tokenTransfer === null || tokenTransfer === void 0 ? void 0 : tokenTransfer.tokenId)) {
+                return tokenTransfer;
+              }
             }
 
             return null;
@@ -18815,19 +18817,9 @@
 
                       case 5:
                         ans = _context63.sent;
-
-                        if (!(contractAddress === 'KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j')) {
-                          _context63.next = 9;
-                          break;
-                        }
-
-                        console.log('Skip KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j');
-                        return _context63.abrupt("return", null);
-
-                      case 9:
                         return _context63.abrupt("return", ans ? ans : null);
 
-                      case 10:
+                      case 7:
                       case "end":
                         return _context63.stop();
                     }

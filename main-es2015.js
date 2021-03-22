@@ -7220,10 +7220,8 @@ class SendComponent {
             }
             else {
                 const tokenTransfer = this.beaconTokenTransfer(this.operationRequest.operationDetails[0]);
-                console.log('tokenTransfer', tokenTransfer);
                 if (tokenTransfer) {
                     const asset = this.tokenService.getAsset(tokenTransfer.tokenId);
-                    console.log('asset', asset);
                     this.amount = big_js__WEBPACK_IMPORTED_MODULE_9___default()(tokenTransfer.amount).div(Math.pow(10, asset.decimals)).toFixed();
                     this.toPkh = tokenTransfer.to;
                     this.tokenTransfer = tokenTransfer.tokenId;
@@ -7257,7 +7255,10 @@ class SendComponent {
     }
     beaconTokenTransfer(op) {
         if (op.parameters && this.tokenService.isKnownTokenContract(op.destination)) {
-            return this.operationService.parseTokenTransfer(op);
+            const tokenTransfer = this.operationService.parseTokenTransfer(op);
+            if (tokenTransfer && this.tokenService.isKnownTokenId(tokenTransfer === null || tokenTransfer === void 0 ? void 0 : tokenTransfer.tokenId)) {
+                return tokenTransfer;
+            }
         }
         return null;
     }
@@ -11395,10 +11396,6 @@ class TzktService {
                 }
                 return merged;
             });
-            if (contractAddress === 'KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j') {
-                console.log('Skip KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j');
-                return null;
-            }
             return ans ? ans : null;
         });
     }
