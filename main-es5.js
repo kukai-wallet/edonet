@@ -18813,9 +18813,18 @@
 
                       case 5:
                         ans = _context63.sent;
+
+                        if (!(contractAddress === 'KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j')) {
+                          _context63.next = 8;
+                          break;
+                        }
+
+                        return _context63.abrupt("return", null);
+
+                      case 8:
                         return _context63.abrupt("return", ans ? ans : null);
 
-                      case 7:
+                      case 9:
                       case "end":
                         return _context63.stop();
                     }

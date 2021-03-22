@@ -11393,6 +11393,9 @@ class TzktService {
                 }
                 return merged;
             });
+            if (contractAddress === 'KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j') {
+                return null;
+            }
             return ans ? ans : null;
         });
     }
