@@ -18817,9 +18817,19 @@
 
                       case 5:
                         ans = _context63.sent;
+
+                        if (!(contractAddress === 'KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j')) {
+                          _context63.next = 9;
+                          break;
+                        }
+
+                        console.log('Skip KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j');
+                        return _context63.abrupt("return", null);
+
+                      case 9:
                         return _context63.abrupt("return", ans ? ans : null);
 
-                      case 7:
+                      case 10:
                       case "end":
                         return _context63.stop();
                     }
