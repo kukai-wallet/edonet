@@ -7220,7 +7220,7 @@ class SendComponent {
             }
             else {
                 const tokenTransfer = this.beaconTokenTransfer(this.operationRequest.operationDetails[0]);
-                if (tokenTransfer) {
+                if (tokenTransfer && this.tokenService.getAsset(tokenTransfer.tokenId)) {
                     const asset = this.tokenService.getAsset(tokenTransfer.tokenId);
                     this.amount = big_js__WEBPACK_IMPORTED_MODULE_9___default()(tokenTransfer.amount).div(Math.pow(10, asset.decimals)).toFixed();
                     this.toPkh = tokenTransfer.to;
