@@ -212,7 +212,7 @@
 
             _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](5, "p");
 
-            _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](6, "Kukai is a Tezos web wallet based on three principles: Security, Community and Reliability.");
+            _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](6, "Kukai is a Tezos web wallet based on three principles: Security, Community and Reliability..");
 
             _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
 
@@ -12062,7 +12062,7 @@
                       } else {
                         tokenTransfer = this.beaconTokenTransfer(this.operationRequest.operationDetails[0]);
 
-                        if (tokenTransfer && this.tokenService.getAsset(tokenTransfer.tokenId)) {
+                        if (tokenTransfer) {
                           asset = this.tokenService.getAsset(tokenTransfer.tokenId);
                           this.amount = big_js__WEBPACK_IMPORTED_MODULE_9___default()(tokenTransfer.amount).div(Math.pow(10, asset.decimals)).toFixed();
                           this.toPkh = tokenTransfer.to;
