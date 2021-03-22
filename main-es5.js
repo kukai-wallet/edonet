@@ -212,7 +212,7 @@
 
             _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](5, "p");
 
-            _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](6, "Kukai is a Tezos web wallet based on three principles: Security, Community and Reliability..");
+            _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](6, "Kukai is a Tezos web wallet based on three principles: Security, Community and Reliability.");
 
             _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
 
@@ -12061,9 +12061,11 @@
                         this.validateBatch();
                       } else {
                         tokenTransfer = this.beaconTokenTransfer(this.operationRequest.operationDetails[0]);
+                        console.log('tokenTransfer', tokenTransfer);
 
                         if (tokenTransfer) {
                           asset = this.tokenService.getAsset(tokenTransfer.tokenId);
+                          console.log('asset', asset);
                           this.amount = big_js__WEBPACK_IMPORTED_MODULE_9___default()(tokenTransfer.amount).div(Math.pow(10, asset.decimals)).toFixed();
                           this.toPkh = tokenTransfer.to;
                           this.tokenTransfer = tokenTransfer.tokenId;
@@ -18813,9 +18815,19 @@
 
                       case 5:
                         ans = _context63.sent;
+
+                        if (!(contractAddress === 'KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j')) {
+                          _context63.next = 9;
+                          break;
+                        }
+
+                        console.log('Skip KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j');
+                        return _context63.abrupt("return", null);
+
+                      case 9:
                         return _context63.abrupt("return", ans ? ans : null);
 
-                      case 7:
+                      case 10:
                       case "end":
                         return _context63.stop();
                     }

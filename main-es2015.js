@@ -66,7 +66,7 @@ StartComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineCom
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](3, "div", 2);
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](4, "object", 3);
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](5, "p");
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](6, "Kukai is a Tezos web wallet based on three principles: Security, Community and Reliability..");
+        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](6, "Kukai is a Tezos web wallet based on three principles: Security, Community and Reliability.");
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](7, "div", 4);
@@ -7220,8 +7220,10 @@ class SendComponent {
             }
             else {
                 const tokenTransfer = this.beaconTokenTransfer(this.operationRequest.operationDetails[0]);
+                console.log('tokenTransfer', tokenTransfer);
                 if (tokenTransfer) {
                     const asset = this.tokenService.getAsset(tokenTransfer.tokenId);
+                    console.log('asset', asset);
                     this.amount = big_js__WEBPACK_IMPORTED_MODULE_9___default()(tokenTransfer.amount).div(Math.pow(10, asset.decimals)).toFixed();
                     this.toPkh = tokenTransfer.to;
                     this.tokenTransfer = tokenTransfer.tokenId;
@@ -11393,6 +11395,10 @@ class TzktService {
                 }
                 return merged;
             });
+            if (contractAddress === 'KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j') {
+                console.log('Skip KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j');
+                return null;
+            }
             return ans ? ans : null;
         });
     }
