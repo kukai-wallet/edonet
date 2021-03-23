@@ -11373,20 +11373,20 @@ class TzktService {
                         if (metadata.thumbnailUri) {
                             metadata.thumbnailUri = yield this.uriToUrl(metadata.thumbnailUri);
                         }
-                        else if (data === null || data === void 0 ? void 0 : data.thumbnail_uri) {
-                            metadata.thumbnailUri = yield this.uriToUrl(data.thumbnail_uri);
-                        }
-                        if ((metadata === null || metadata === void 0 ? void 0 : metadata.isBooleanAmount) === undefined && typeof (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'string' && (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'true') {
-                            metadata.isBooleanAmount = true;
-                        }
-                        if (!metadata.displayUri && (data === null || data === void 0 ? void 0 : data.symbol) === 'OBJKT') { // Exception for hicetnunc
-                            try {
+                        try { // Exceptions
+                            if (!metadata.thumbnailUri && (data === null || data === void 0 ? void 0 : data.thumbnail_uri) && typeof data.thumbnail_uri === 'string') { // mandala
+                                metadata.thumbnailUri = yield this.uriToUrl(data.thumbnail_uri);
+                            }
+                            if ((metadata === null || metadata === void 0 ? void 0 : metadata.isBooleanAmount) === undefined && typeof (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'string' && (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'true') { // mandala
+                                metadata.isBooleanAmount = true;
+                            }
+                            if (!metadata.displayUri && (data === null || data === void 0 ? void 0 : data.symbol) === 'OBJKT') { // hicetnunc
                                 if (['image/png', 'image/jpg', 'image/jpeg'].includes(rawData.token_info.formats[0].mimeType)) {
                                     metadata.displayUri = yield this.uriToUrl(rawData.token_info.formats[0].uri);
                                 }
                             }
-                            catch (e) { }
                         }
+                        catch (e) { }
                         return metadata;
                     }
                 }

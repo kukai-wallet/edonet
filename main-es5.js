@@ -18686,14 +18686,14 @@
 
                                   case 4:
                                     if ((_step15 = _iterator15.n()).done) {
-                                      _context62.next = 40;
+                                      _context62.next = 38;
                                       break;
                                     }
 
                                     data = _step15.value;
 
                                     if (!((data === null || data === void 0 ? void 0 : data.token_id) === Number(id))) {
-                                      _context62.next = 38;
+                                      _context62.next = 36;
                                       break;
                                     }
 
@@ -18729,7 +18729,7 @@
 
                                   case 16:
                                     if (!metadata.thumbnailUri) {
-                                      _context62.next = 22;
+                                      _context62.next = 20;
                                       break;
                                     }
 
@@ -18738,86 +18738,85 @@
 
                                   case 19:
                                     metadata.thumbnailUri = _context62.sent;
-                                    _context62.next = 26;
-                                    break;
 
-                                  case 22:
-                                    if (!(data === null || data === void 0 ? void 0 : data.thumbnail_uri)) {
-                                      _context62.next = 26;
+                                  case 20:
+                                    _context62.prev = 20;
+
+                                    if (!(!metadata.thumbnailUri && (data === null || data === void 0 ? void 0 : data.thumbnail_uri) && typeof data.thumbnail_uri === 'string')) {
+                                      _context62.next = 25;
                                       break;
                                     }
 
-                                    _context62.next = 25;
+                                    _context62.next = 24;
                                     return this.uriToUrl(data.thumbnail_uri);
 
-                                  case 25:
+                                  case 24:
                                     metadata.thumbnailUri = _context62.sent;
 
-                                  case 26:
+                                  case 25:
                                     if ((metadata === null || metadata === void 0 ? void 0 : metadata.isBooleanAmount) === undefined && typeof (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'string' && (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'true') {
+                                      // mandala
                                       metadata.isBooleanAmount = true;
                                     }
 
                                     if (!(!metadata.displayUri && (data === null || data === void 0 ? void 0 : data.symbol) === 'OBJKT')) {
-                                      _context62.next = 37;
+                                      _context62.next = 31;
                                       break;
                                     }
-
-                                    _context62.prev = 28;
 
                                     if (!['image/png', 'image/jpg', 'image/jpeg'].includes(rawData.token_info.formats[0].mimeType)) {
-                                      _context62.next = 33;
+                                      _context62.next = 31;
                                       break;
                                     }
 
-                                    _context62.next = 32;
+                                    _context62.next = 30;
                                     return this.uriToUrl(rawData.token_info.formats[0].uri);
 
-                                  case 32:
+                                  case 30:
                                     metadata.displayUri = _context62.sent;
 
-                                  case 33:
-                                    _context62.next = 37;
+                                  case 31:
+                                    _context62.next = 35;
                                     break;
 
-                                  case 35:
-                                    _context62.prev = 35;
-                                    _context62.t0 = _context62["catch"](28);
+                                  case 33:
+                                    _context62.prev = 33;
+                                    _context62.t0 = _context62["catch"](20);
 
-                                  case 37:
+                                  case 35:
                                     return _context62.abrupt("return", metadata);
 
-                                  case 38:
+                                  case 36:
                                     _context62.next = 4;
                                     break;
 
-                                  case 40:
-                                    _context62.next = 45;
+                                  case 38:
+                                    _context62.next = 43;
                                     break;
 
-                                  case 42:
-                                    _context62.prev = 42;
+                                  case 40:
+                                    _context62.prev = 40;
                                     _context62.t1 = _context62["catch"](2);
 
                                     _iterator15.e(_context62.t1);
 
-                                  case 45:
-                                    _context62.prev = 45;
+                                  case 43:
+                                    _context62.prev = 43;
 
                                     _iterator15.f();
 
-                                    return _context62.finish(45);
+                                    return _context62.finish(43);
 
-                                  case 48:
+                                  case 46:
                                     console.log("No token metadata found for ".concat(contractAddress, ":").concat(id));
                                     return _context62.abrupt("return", {});
 
-                                  case 50:
+                                  case 48:
                                   case "end":
                                     return _context62.stop();
                                 }
                               }
-                            }, _callee62, this, [[2, 42, 45, 48], [28, 35]]);
+                            }, _callee62, this, [[2, 40, 43, 46], [20, 33]]);
                           }));
                         })["catch"](function (e) {
                           return {};
