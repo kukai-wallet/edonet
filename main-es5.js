@@ -8612,11 +8612,6 @@
         production: false
       };
       var CONSTANTS = {
-        /* NAME: 'Testnet / Delphinet',
-        NETWORK: 'delphinet',
-        MAINNET: false,
-        NODE_URL: 'https://api.tez.ie/rpc/delphinet',
-        BLOCK_EXPLORER_URL: 'https://delphinet.tzkt.io',*/
         NAME: 'Testnet / Edonet',
         NETWORK: 'edonet',
         MAINNET: false,
