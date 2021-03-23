@@ -5579,7 +5579,8 @@ const TRUSTED_TOKEN_CONTRACTS = [
     'KT1GhzeDu852VfxHQT3AnnUu2U1q4GnVTYJv',
     'KT1R3TqdxsHPYxNQBdY7jmXAeU17WpucMXDh',
     'KT1RUSCZ7pJ3WNTuXFD44UpStmNRjA459guZ',
-    'KT1PrNd3sy1pLAqGtft47dzG4v8KizqPJntT'
+    'KT1PrNd3sy1pLAqGtft47dzG4v8KizqPJntT',
+    'KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j'
 ];
 
 
@@ -11371,6 +11372,12 @@ class TzktService {
                         }
                         if (metadata.thumbnailUri) {
                             metadata.thumbnailUri = yield this.uriToUrl(metadata.thumbnailUri);
+                        }
+                        else if (data === null || data === void 0 ? void 0 : data.thumbnail_uri) {
+                            metadata.thumbnailUri = yield this.uriToUrl(data.thumbnail_uri);
+                        }
+                        if ((metadata === null || metadata === void 0 ? void 0 : metadata.isBooleanAmount) === undefined && typeof (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'string' && (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'true') {
+                            metadata.isBooleanAmount = true;
                         }
                         if (!metadata.displayUri && (data === null || data === void 0 ? void 0 : data.symbol) === 'OBJKT') { // Exception for hicetnunc
                             try {

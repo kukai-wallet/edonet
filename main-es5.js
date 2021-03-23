@@ -8671,7 +8671,7 @@
           }
         }
       };
-      var TRUSTED_TOKEN_CONTRACTS = ['KT1LyJV9JdcDCp5zDfw6MxpoShXYrBMG3dfK', 'KT1RfMoskMhR1hDFJTVN6gGMwQLDSTmLeDsc', 'KT1Szwqme712TkQ7LdP1hBqKjdUUBjxoB8bR', 'KT1PS2jZVzNMW54UsnqBqwwkArXnAZ29jiTF', 'KT1Jscaxi6J9sKUzX37wFfRRdZPdNfMDy85R', 'KT1NaoA6pjAMCpnQAmUoQTxMCuEjJ2kodyrj', 'KT1RMqNMuXm2EU99E75cHk53iN75y9kmCG1X', 'KT1TWb6cE56q2L8yTeNNchXqDSXacrNqyVNZ', 'KT1PBL66suJeW2nBbWXgR9ex9gu7TFCmSgQg', 'KT1R5U6HXDZAykVd5gcoWEoGGwE7mznWLajL', 'KT1Ea5N3B4b3LTWvCX7FZoV9Q3pjs4XSvPHh', 'KT1Eb4LP7k15y6zCdHUjM3qkzi5T1dRSLPhq', 'KT1WcB4vxci5C1DjmJkMNSmaANFvgQDvdprZ', 'KT1T66r244FFuH2hpfZgoKVRLXDtnfjBRxVc', 'KT1XgGvzQSYrvo4NCxwTvJ7tSbZqGcji4BeV', 'KT1GhzeDu852VfxHQT3AnnUu2U1q4GnVTYJv', 'KT1R3TqdxsHPYxNQBdY7jmXAeU17WpucMXDh', 'KT1RUSCZ7pJ3WNTuXFD44UpStmNRjA459guZ', 'KT1PrNd3sy1pLAqGtft47dzG4v8KizqPJntT'];
+      var TRUSTED_TOKEN_CONTRACTS = ['KT1LyJV9JdcDCp5zDfw6MxpoShXYrBMG3dfK', 'KT1RfMoskMhR1hDFJTVN6gGMwQLDSTmLeDsc', 'KT1Szwqme712TkQ7LdP1hBqKjdUUBjxoB8bR', 'KT1PS2jZVzNMW54UsnqBqwwkArXnAZ29jiTF', 'KT1Jscaxi6J9sKUzX37wFfRRdZPdNfMDy85R', 'KT1NaoA6pjAMCpnQAmUoQTxMCuEjJ2kodyrj', 'KT1RMqNMuXm2EU99E75cHk53iN75y9kmCG1X', 'KT1TWb6cE56q2L8yTeNNchXqDSXacrNqyVNZ', 'KT1PBL66suJeW2nBbWXgR9ex9gu7TFCmSgQg', 'KT1R5U6HXDZAykVd5gcoWEoGGwE7mznWLajL', 'KT1Ea5N3B4b3LTWvCX7FZoV9Q3pjs4XSvPHh', 'KT1Eb4LP7k15y6zCdHUjM3qkzi5T1dRSLPhq', 'KT1WcB4vxci5C1DjmJkMNSmaANFvgQDvdprZ', 'KT1T66r244FFuH2hpfZgoKVRLXDtnfjBRxVc', 'KT1XgGvzQSYrvo4NCxwTvJ7tSbZqGcji4BeV', 'KT1GhzeDu852VfxHQT3AnnUu2U1q4GnVTYJv', 'KT1R3TqdxsHPYxNQBdY7jmXAeU17WpucMXDh', 'KT1RUSCZ7pJ3WNTuXFD44UpStmNRjA459guZ', 'KT1PrNd3sy1pLAqGtft47dzG4v8KizqPJntT', 'KT1WgeR4SaaTiTrwzrR1aD7h9YfeUTWcvC9j'];
       /***/
     },
 
@@ -18686,14 +18686,14 @@
 
                                   case 4:
                                     if ((_step15 = _iterator15.n()).done) {
-                                      _context62.next = 33;
+                                      _context62.next = 40;
                                       break;
                                     }
 
                                     data = _step15.value;
 
                                     if (!((data === null || data === void 0 ? void 0 : data.token_id) === Number(id))) {
-                                      _context62.next = 31;
+                                      _context62.next = 38;
                                       break;
                                     }
 
@@ -18729,7 +18729,7 @@
 
                                   case 16:
                                     if (!metadata.thumbnailUri) {
-                                      _context62.next = 20;
+                                      _context62.next = 22;
                                       break;
                                     }
 
@@ -18738,68 +18738,86 @@
 
                                   case 19:
                                     metadata.thumbnailUri = _context62.sent;
+                                    _context62.next = 26;
+                                    break;
 
-                                  case 20:
-                                    if (!(!metadata.displayUri && (data === null || data === void 0 ? void 0 : data.symbol) === 'OBJKT')) {
-                                      _context62.next = 30;
-                                      break;
-                                    }
-
-                                    _context62.prev = 21;
-
-                                    if (!['image/png', 'image/jpg', 'image/jpeg'].includes(rawData.token_info.formats[0].mimeType)) {
+                                  case 22:
+                                    if (!(data === null || data === void 0 ? void 0 : data.thumbnail_uri)) {
                                       _context62.next = 26;
                                       break;
                                     }
 
                                     _context62.next = 25;
-                                    return this.uriToUrl(rawData.token_info.formats[0].uri);
+                                    return this.uriToUrl(data.thumbnail_uri);
 
                                   case 25:
-                                    metadata.displayUri = _context62.sent;
+                                    metadata.thumbnailUri = _context62.sent;
 
                                   case 26:
-                                    _context62.next = 30;
-                                    break;
+                                    if ((metadata === null || metadata === void 0 ? void 0 : metadata.isBooleanAmount) === undefined && typeof (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'string' && (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'true') {
+                                      metadata.isBooleanAmount = true;
+                                    }
 
-                                  case 28:
+                                    if (!(!metadata.displayUri && (data === null || data === void 0 ? void 0 : data.symbol) === 'OBJKT')) {
+                                      _context62.next = 37;
+                                      break;
+                                    }
+
                                     _context62.prev = 28;
-                                    _context62.t0 = _context62["catch"](21);
 
-                                  case 30:
-                                    return _context62.abrupt("return", metadata);
+                                    if (!['image/png', 'image/jpg', 'image/jpeg'].includes(rawData.token_info.formats[0].mimeType)) {
+                                      _context62.next = 33;
+                                      break;
+                                    }
 
-                                  case 31:
-                                    _context62.next = 4;
-                                    break;
+                                    _context62.next = 32;
+                                    return this.uriToUrl(rawData.token_info.formats[0].uri);
+
+                                  case 32:
+                                    metadata.displayUri = _context62.sent;
 
                                   case 33:
-                                    _context62.next = 38;
+                                    _context62.next = 37;
                                     break;
 
                                   case 35:
                                     _context62.prev = 35;
+                                    _context62.t0 = _context62["catch"](28);
+
+                                  case 37:
+                                    return _context62.abrupt("return", metadata);
+
+                                  case 38:
+                                    _context62.next = 4;
+                                    break;
+
+                                  case 40:
+                                    _context62.next = 45;
+                                    break;
+
+                                  case 42:
+                                    _context62.prev = 42;
                                     _context62.t1 = _context62["catch"](2);
 
                                     _iterator15.e(_context62.t1);
 
-                                  case 38:
-                                    _context62.prev = 38;
+                                  case 45:
+                                    _context62.prev = 45;
 
                                     _iterator15.f();
 
-                                    return _context62.finish(38);
+                                    return _context62.finish(45);
 
-                                  case 41:
+                                  case 48:
                                     console.log("No token metadata found for ".concat(contractAddress, ":").concat(id));
                                     return _context62.abrupt("return", {});
 
-                                  case 43:
+                                  case 50:
                                   case "end":
                                     return _context62.stop();
                                 }
                               }
-                            }, _callee62, this, [[2, 35, 38, 41], [21, 28]]);
+                            }, _callee62, this, [[2, 42, 45, 48], [28, 35]]);
                           }));
                         })["catch"](function (e) {
                           return {};
