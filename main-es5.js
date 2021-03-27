@@ -8790,7 +8790,7 @@
 
           this.indexerService = indexerService;
           this.AUTO_DISCOVER = true;
-          this.version = '1.0.5';
+          this.version = '1.0.6';
           this.contracts = {};
           this.exploredIds = {};
           this.storeKey = 'tokenMetadata';
@@ -18493,7 +18493,7 @@
                         ops = _context61.sent;
                         unknownTokenIds = [];
                         _context61.next = 6;
-                        return fetch("".concat(this.bcd, "/tokens/").concat(this.network, "/transfers/").concat(address, "?size=20")).then(function (response) {
+                        return fetch("".concat(this.bcd, "/tokens/").concat(this.network, "/transfers/").concat(address, "?size=20&offset=0")).then(function (response) {
                           return response.json();
                         }).then(function (data) {
                           return data.transfers.map(function (tx) {
@@ -18633,7 +18633,7 @@
                           console.log("No contract metadata found for ".concat(contractAddress, ":").concat(id));
                           return {};
                         });
-                        tokenMetadata = fetch("".concat(this.bcd, "/contract/").concat(this.network, "/").concat(contractAddress, "/tokens?size=1000000")).then(function (response) {
+                        tokenMetadata = fetch("".concat(this.bcd, "/contract/").concat(this.network, "/").concat(contractAddress, "/tokens?token_id=").concat(id, "&offset=0")).then(function (response) {
                           return response.json();
                         }).then(function (datas) {
                           return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this39, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee62() {
@@ -18759,13 +18759,13 @@
                                       break;
                                     }
 
-                                    if (!['image/png', 'image/jpg', 'image/jpeg'].includes(rawData.token_info.formats[0].mimeType)) {
+                                    if (!['image/png', 'image/jpg', 'image/jpeg'].includes(rawData.formats[0].mimeType)) {
                                       _context62.next = 31;
                                       break;
                                     }
 
                                     _context62.next = 30;
-                                    return this.uriToUrl(rawData.token_info.formats[0].uri);
+                                    return this.uriToUrl(rawData.formats[0].uri);
 
                                   case 30:
                                     metadata.displayUri = _context62.sent;

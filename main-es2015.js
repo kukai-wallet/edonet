@@ -5643,7 +5643,7 @@ class TokenService {
     constructor(indexerService) {
         this.indexerService = indexerService;
         this.AUTO_DISCOVER = true;
-        this.version = '1.0.5';
+        this.version = '1.0.6';
         this.contracts = {};
         this.exploredIds = {};
         this.storeKey = 'tokenMetadata';
@@ -11243,7 +11243,7 @@ class TzktService {
                 }
             }).filter(obj => obj));
             const unknownTokenIds = [];
-            const tokenTxs = yield fetch(`${this.bcd}/tokens/${this.network}/transfers/${address}?size=20`)
+            const tokenTxs = yield fetch(`${this.bcd}/tokens/${this.network}/transfers/${address}?size=20&offset=0`)
                 .then(response => response.json())
                 .then(data => data.transfers.map(tx => {
                 const tokenId = `${tx.contract}:${tx.token_id}`;
@@ -11337,7 +11337,7 @@ class TzktService {
                 console.log(`No contract metadata found for ${contractAddress}:${id}`);
                 return {};
             });
-            const tokenMetadata = fetch(`${this.bcd}/contract/${this.network}/${contractAddress}/tokens?size=1000000`)
+            const tokenMetadata = fetch(`${this.bcd}/contract/${this.network}/${contractAddress}/tokens?token_id=${id}&offset=0`)
                 .then(response => response.json())
                 .then((datas) => Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
                 const keys = [
@@ -11376,8 +11376,8 @@ class TzktService {
                                 metadata.isBooleanAmount = true;
                             }
                             if (!metadata.displayUri && (data === null || data === void 0 ? void 0 : data.symbol) === 'OBJKT') { // hicetnunc
-                                if (['image/png', 'image/jpg', 'image/jpeg'].includes(rawData.token_info.formats[0].mimeType)) {
-                                    metadata.displayUri = yield this.uriToUrl(rawData.token_info.formats[0].uri);
+                                if (['image/png', 'image/jpg', 'image/jpeg'].includes(rawData.formats[0].mimeType)) {
+                                    metadata.displayUri = yield this.uriToUrl(rawData.formats[0].uri);
                                 }
                             }
                         }
