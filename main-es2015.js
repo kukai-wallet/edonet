@@ -5643,7 +5643,7 @@ class TokenService {
     constructor(indexerService) {
         this.indexerService = indexerService;
         this.AUTO_DISCOVER = true;
-        this.version = '1.0.6';
+        this.version = '1.0.7';
         this.contracts = {};
         this.exploredIds = {};
         this.storeKey = 'tokenMetadata';
@@ -11123,17 +11123,21 @@ AppModule.ɵinj = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjector
 /*!*******************************************************!*\
   !*** ./src/app/services/indexer/tzkt/tzkt.service.ts ***!
   \*******************************************************/
-/*! exports provided: TzktService */
+/*! exports provided: TzktService, mutableConvertObjectPropertiesSnakeToCamel */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* WEBPACK VAR INJECTION */(function(Buffer) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TzktService", function() { return TzktService; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mutableConvertObjectPropertiesSnakeToCamel", function() { return mutableConvertObjectPropertiesSnakeToCamel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "mrSG");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "fXoL");
 /* harmony import */ var _environments_environment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../environments/environment */ "AytR");
 /* harmony import */ var crypto_browserify__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! crypto-browserify */ "HEbw");
 /* harmony import */ var crypto_browserify__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(crypto_browserify__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var assert__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! assert */ "9lTW");
+/* harmony import */ var assert__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(assert__WEBPACK_IMPORTED_MODULE_4__);
+
 
 
 
@@ -11142,7 +11146,8 @@ __webpack_require__.r(__webpack_exports__);
 class TzktService {
     constructor() {
         this.network = _environments_environment__WEBPACK_IMPORTED_MODULE_2__["CONSTANTS"].NETWORK.replace('edonet', 'edo2net');
-        this.bcd = 'https://api.better-call.dev/v1';
+        this.bcd = 'https://api.test.better-call.dev/v1';
+        this.BCD_TOKEN_QUERY_SIZE = 10;
     }
     getContractAddresses(pkh) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
@@ -11158,11 +11163,14 @@ class TzktService {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
             const tokens = [];
             const unknownTokenIds = [];
+            const aryTokens = yield this.getTokenBalancesUsingPromiseAll(address);
             return fetch(`${this.bcd}/account/${this.network}/${address}`)
                 .then(response => response.json())
                 .then(data => {
                 var _a;
                 if (data) {
+                    // inject aryTokens result back into where tokens property used to be
+                    data.tokens = aryTokens;
                     if ((_a = data === null || data === void 0 ? void 0 : data.tokens) === null || _a === void 0 ? void 0 : _a.length) {
                         for (const token of data.tokens) {
                             tokens.push(token);
@@ -11243,7 +11251,7 @@ class TzktService {
                 }
             }).filter(obj => obj));
             const unknownTokenIds = [];
-            const tokenTxs = yield fetch(`${this.bcd}/tokens/${this.network}/transfers/${address}?size=20&offset=0`)
+            const tokenTxs = yield fetch(`${this.bcd}/tokens/${this.network}/transfers/${address}?max=20&start=0`)
                 .then(response => response.json())
                 .then(data => data.transfers.map(tx => {
                 const tokenId = `${tx.contract}:${tx.token_id}`;
@@ -11318,6 +11326,7 @@ class TzktService {
             }).catch(e => {
                 return null;
             });
+            // no change to this endpoint
             const contractMetadata = fetch(`${this.bcd}/account/${this.network}/${contractAddress}/metadata`)
                 .then(response => response.json())
                 .then(data => {
@@ -11352,8 +11361,12 @@ class TzktService {
                     { key: 'isBooleanAmount', type: 'boolean' },
                     { key: 'series', type: 'string' }
                 ];
+                // should always be 1
+                assert__WEBPACK_IMPORTED_MODULE_4___default()(datas.length === 1, `cannot find token_id ${id} for contract: ${contractAddress}`);
                 for (const data of datas) {
                     if ((data === null || data === void 0 ? void 0 : data.token_id) === Number(id)) {
+                        // possible snake_case to camelCase conversion; depending on future BCD updates
+                        mutableConvertObjectPropertiesSnakeToCamel(data);
                         const rawData = JSON.parse(JSON.stringify(data));
                         this.flattern(data);
                         const metadata = {};
@@ -11369,9 +11382,6 @@ class TzktService {
                             metadata.thumbnailUri = yield this.uriToUrl(metadata.thumbnailUri);
                         }
                         try { // Exceptions
-                            if (!metadata.thumbnailUri && (data === null || data === void 0 ? void 0 : data.thumbnail_uri) && typeof data.thumbnail_uri === 'string') { // mandala
-                                metadata.thumbnailUri = yield this.uriToUrl(data.thumbnail_uri);
-                            }
                             if ((metadata === null || metadata === void 0 ? void 0 : metadata.isBooleanAmount) === undefined && typeof (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'string' && (data === null || data === void 0 ? void 0 : data.isBooleanAmount) === 'true') { // mandala
                                 metadata.isBooleanAmount = true;
                             }
@@ -11415,204 +11425,6 @@ class TzktService {
             }
         }
     }
-    getTokenMetadataDepricated(contractAddress, id) {
-        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
-            console.log(contractAddress + ':' + id);
-            const bigMapId = yield this.getBigMapIds(contractAddress);
-            if (bigMapId.token !== -1) {
-                const tokenMetadata = yield this.extractTokenMetadata(bigMapId.token, id);
-                const contractMetadata = yield this.extractContractMetadata(bigMapId.contract);
-                const metadata = Object.assign(Object.assign({}, tokenMetadata), contractMetadata);
-                return metadata;
-            }
-            return null;
-        });
-    }
-    extractTokenMetadata(bigMapId, id) {
-        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
-            const tokenBigMap = yield this.fetchApi(`${this.bcd}/bigmap/${this.network}/${bigMapId}/keys?size=1000`);
-            console.log(`${this.bcd}/bigmap/${this.network}/${bigMapId}/keys`);
-            let url = '';
-            const metadata = {};
-            const lookFor = {
-                strings: ['name', 'symbol', 'description', 'displayUri', 'displayURI'],
-                numbers: ['decimals'],
-                booleans: ['isTransferable', 'isBooleanAmount', 'shouldPreferSymbol']
-            };
-            try {
-                for (const child of tokenBigMap) {
-                    if (child.data.key.value === id.toString()) {
-                        for (const child2 of child.data.value.children) {
-                            if (child2.name === 'token_metadata_map') {
-                                console.log('token_metadata_map', child2.children);
-                                for (const child3 of child2.children) {
-                                    if (!child3.name || child3.name === '""') {
-                                        url = yield this.uriToUrl(child3.value);
-                                    }
-                                    else {
-                                        for (const key of lookFor.strings) {
-                                            if (child3.name === key) {
-                                                metadata[key] = child3.value;
-                                            }
-                                        }
-                                        for (const key of lookFor.numbers) {
-                                            if (child3.name === key) {
-                                                metadata[key] = Number(child3.value);
-                                            }
-                                        }
-                                        for (const key of lookFor.booleans) {
-                                            if (child3.name === key) {
-                                                if (child3.value === '00') {
-                                                    metadata[key] = false;
-                                                }
-                                                else if (child3.value.toUpperCase() === 'FF') {
-                                                    metadata[key] = true;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-            catch (e) {
-                console.warn(e);
-                return null;
-            }
-            console.log(metadata);
-            console.log(url);
-            if (!url) {
-                console.log('No offchain metadata');
-                if (!metadata['displayUri'] && metadata['displayURI']) {
-                    metadata['displayUri'] = metadata['displayURI'];
-                    delete metadata['displayURI'];
-                }
-                if (metadata['displayUri']) {
-                    metadata['displayUri'] = yield this.uriToUrl(metadata['displayUri']);
-                }
-                return metadata;
-            }
-            const offChainMeta = yield this.fetchApi(`${url}`);
-            if (!offChainMeta) {
-                console.warn('Failed to fetch offchain metadata');
-                return null;
-            }
-            console.log(offChainMeta);
-            for (const key of lookFor.strings) {
-                if (offChainMeta[key] && typeof offChainMeta[key] === 'string' && typeof metadata[key] === 'undefined') {
-                    metadata[key] = offChainMeta[key];
-                }
-            }
-            for (const key of lookFor.numbers) {
-                if (typeof offChainMeta[key] !== 'undefined' && typeof metadata[key] === 'undefined') {
-                    if (typeof offChainMeta[key] === 'string') {
-                        metadata[key] = Number(offChainMeta[key]);
-                    }
-                    else if (typeof offChainMeta[key] === 'number') {
-                        metadata[key] = offChainMeta[key];
-                    }
-                }
-            }
-            for (const key of lookFor.booleans) {
-                if (typeof offChainMeta[key] !== 'undefined' && typeof offChainMeta[key] === 'boolean' && typeof metadata[key] === 'undefined') {
-                    metadata[key] = offChainMeta[key];
-                }
-            }
-            if (!metadata['displayUri'] && metadata['displayURI']) {
-                metadata['displayUri'] = metadata['displayURI'];
-                delete metadata['displayURI'];
-            }
-            if (metadata['displayUri']) {
-                metadata['displayUri'] = yield this.uriToUrl(metadata['displayUri']);
-            }
-            if (metadata.decimals === undefined) {
-                metadata.decimals = 0;
-            }
-            console.log(metadata);
-            return metadata;
-        });
-    }
-    extractContractMetadata(bigMapId) {
-        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
-            const contractBigMap = yield this.fetchApi(`${this.bcd}/bigmap/${this.network}/${bigMapId}/keys`);
-            let url = '';
-            try {
-                for (const child of contractBigMap) {
-                    if (child.data.key.value === '') {
-                        url = yield this.uriToUrl(child.data.value.value);
-                        break;
-                    }
-                }
-            }
-            catch (e) {
-                return null;
-            }
-            if (!url) {
-                return null;
-            }
-            if (bigMapId !== -1) {
-                try {
-                    const metadata = {};
-                    const contractMeta = yield this.fetchApi(`${url}`);
-                    if (contractMeta.interfaces) {
-                        if (contractMeta.interfaces.includes('TZIP-12')) {
-                            metadata['tokenType'] = 'FA2';
-                        }
-                        else if (contractMeta.interfaces.includes('TZIP-7')) {
-                            metadata['tokenType'] = 'FA1.2';
-                        }
-                    }
-                    if (contractMeta['tokenCategory']) {
-                        metadata['tokenCategory'] = contractMeta['tokenCategory'];
-                    }
-                    console.log('contract metadata', metadata);
-                    return metadata;
-                }
-                catch (_a) { }
-            }
-            return null;
-        });
-    }
-    getBigMapIds(contractAddress) {
-        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
-            const storage = yield this.fetchApi(`${this.bcd}/contract/${this.network}/${contractAddress}/storage`);
-            let token = -1;
-            let contract = -1;
-            try {
-                for (const child of storage.children) {
-                    if ((child === null || child === void 0 ? void 0 : child.name) === 'admin') {
-                        if (child.children) {
-                            for (const admin of child.children) {
-                                if ((admin === null || admin === void 0 ? void 0 : admin.name) === 'metadata') {
-                                    contract = admin.value;
-                                }
-                            }
-                        }
-                    }
-                    else if ((child === null || child === void 0 ? void 0 : child.name) === 'assets') {
-                        if (child.children) {
-                            for (const asset of child.children) {
-                                if ((asset === null || asset === void 0 ? void 0 : asset.name) === 'token_metadata') {
-                                    token = asset.value;
-                                }
-                            }
-                        }
-                    }
-                    else if ((child === null || child === void 0 ? void 0 : child.name) === 'metadata') {
-                        contract = child.value;
-                    }
-                }
-            }
-            catch (e) {
-                console.log(e);
-            }
-            return { contract, token };
-        });
-    }
     uriToUrl(uri) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
             if (!uri || uri.length < 8) {
@@ -11639,6 +11451,27 @@ class TzktService {
                 .then(data => data);
         });
     }
+    getTokenBalancesUsingPromiseAll(address) {
+        var _a;
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
+            // get total number of tokens
+            const tokenCount = yield (yield fetch(`${this.bcd}/account/${this.network}/${address}/count`)).json();
+            const tokenTotal = Object.keys(tokenCount).map(key => tokenCount[key]).reduce((a, b) => a + b, 0);
+            // Use Promise.All to get all token balances
+            const querySizeMax = (_a = this.BCD_TOKEN_QUERY_SIZE) !== null && _a !== void 0 ? _a : 10;
+            const totalPromises = Math.floor(tokenTotal / querySizeMax) + Number((tokenTotal % querySizeMax) !== 0);
+            const aryTokenFetchUrl = [];
+            for (let i = 0; i < totalPromises; i++) {
+                const url = `${this.bcd}/account/${this.network}/${address}/token_balances?max=${querySizeMax}&offset=${querySizeMax * i}`;
+                console.log('url', url);
+                aryTokenFetchUrl.push(fetch(url));
+            }
+            const aryTokenResults = yield Promise.all(aryTokenFetchUrl);
+            const aryTokenBalances = yield Promise.all(aryTokenResults.map(r => r.json()));
+            const aryTokens = [].concat(...aryTokenBalances.map(t => t.balances));
+            return aryTokens;
+        });
+    }
 }
 TzktService.ɵfac = function TzktService_Factory(t) { return new (t || TzktService)(); };
 TzktService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjectable"]({ token: TzktService, factory: TzktService.ɵfac, providedIn: 'root' });
@@ -11648,6 +11481,27 @@ TzktService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineInjec
                 providedIn: 'root'
             }]
     }], function () { return []; }, null); })();
+function mutableConvertObjectPropertiesSnakeToCamel(data) {
+    for (const key in data) {
+        if (key.indexOf('_') !== -1) {
+            const aryCamelKey = [];
+            for (let i = 0; i < key.length; i++) {
+                const char = key.charAt(i);
+                if (char === '_') {
+                    aryCamelKey.push(key.charAt(i + 1).toUpperCase());
+                    i++;
+                }
+                else {
+                    aryCamelKey.push(char);
+                }
+            }
+            const camelKey = aryCamelKey.join('');
+            if (!data.hasOwnProperty(camelKey)) {
+                data[camelKey] = data[key];
+            }
+        }
+    }
+}
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../node_modules/node-libs-browser/node_modules/buffer/index.js */ "HDXh").Buffer))
 
