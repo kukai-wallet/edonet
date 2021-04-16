@@ -1518,11 +1518,15 @@ class OperationService {
                 console.log('Invoke contract: ' + tokenTransfer);
                 let invocation;
                 const { kind, decimals, contractAddress, id } = this.tokenService.getAsset(tokenTransfer);
+                const txAmount = big_js__WEBPACK_IMPORTED_MODULE_9___default()(Math.pow(10, decimals)).times(transactions[i].amount);
+                if (!txAmount.mod(1).eq(0)) {
+                    throw new Error(`the amount ${transactions[i].amount} is not within ${decimals} decimals`);
+                }
                 if (kind === 'FA1.2') {
-                    invocation = this.getFA12Transaction(pkh, transactions[i].to, big_js__WEBPACK_IMPORTED_MODULE_9___default()(Math.pow(10, decimals)).times(transactions[i].amount).toString());
+                    invocation = this.getFA12Transaction(pkh, transactions[i].to, txAmount.toFixed(0));
                 }
                 else if (kind === 'FA2') {
-                    invocation = this.getFA2Transaction(pkh, transactions[i].to, big_js__WEBPACK_IMPORTED_MODULE_9___default()(Math.pow(10, decimals)).times(transactions[i].amount).toString(), id);
+                    invocation = this.getFA2Transaction(pkh, transactions[i].to, txAmount.toFixed(0), id);
                 }
                 else {
                     throw new Error('Unrecognized token kind');
@@ -5553,6 +5557,18 @@ const CONSTANTS = {
                 }
             }
         }
+    },
+    CONTRACT_OVERRIDES: {
+        // mystery map
+        'KT1TWb6cE56q2L8yTeNNchXqDSXacrNqyVNZ:reward': {
+            storageUsage: 150, gasUsage: 59920
+        },
+        'KT1RUSCZ7pJ3WNTuXFD44UpStmNRjA459guZ:reward': {
+            storageUsage: 150, gasUsage: 59920
+        },
+        'KT1PrNd3sy1pLAqGtft47dzG4v8KizqPJntT:reward': {
+            storageUsage: 150, gasUsage: 59920
+        },
     }
 };
 const TRUSTED_TOKEN_CONTRACTS = [
@@ -11146,7 +11162,7 @@ __webpack_require__.r(__webpack_exports__);
 class TzktService {
     constructor() {
         this.network = _environments_environment__WEBPACK_IMPORTED_MODULE_2__["CONSTANTS"].NETWORK.replace('edonet', 'edo2net');
-        this.bcd = 'https://api.test.better-call.dev/v1';
+        this.bcd = 'https://api.better-call.dev/v1';
         this.BCD_TOKEN_QUERY_SIZE = 10;
     }
     getContractAddresses(pkh) {
@@ -11776,6 +11792,7 @@ class EstimateService {
         this.revealGasLimit = 1000;
         this.queue = [];
         this.nodeURL = _environments_environment__WEBPACK_IMPORTED_MODULE_7__["CONSTANTS"].NODE_URL;
+        this.contractsOverride = _environments_environment__WEBPACK_IMPORTED_MODULE_7__["CONSTANTS"].CONTRACT_OVERRIDES;
     }
     init(hash, chainId, counter, manager, pk, pkh) {
         this.hash = hash;
@@ -11945,7 +11962,8 @@ class EstimateService {
         }
         const customUsage = this.getUsageException(content);
         if (customUsage) {
-            return customUsage;
+            // if there is a usageException then override values
+            return Object.assign({ gasUsage, storageUsage }, customUsage);
         }
         return { gasUsage, storageUsage };
     }
@@ -12002,13 +12020,9 @@ class EstimateService {
         const entrypoint = (_a = content === null || content === void 0 ? void 0 : content.parameters) === null || _a === void 0 ? void 0 : _a.entrypoint;
         const destination = content === null || content === void 0 ? void 0 : content.destination;
         if (entrypoint && destination) {
-            switch (`${destination}:${entrypoint}`) {
-                case 'KT1TWb6cE56q2L8yTeNNchXqDSXacrNqyVNZ:reward':
-                    return { gasUsage: 59920, storageUsage: 150 };
-                case 'KT1RUSCZ7pJ3WNTuXFD44UpStmNRjA459guZ:reward':
-                    return { gasUsage: 59920, storageUsage: 150 };
-                case 'KT1PrNd3sy1pLAqGtft47dzG4v8KizqPJntT:reward':
-                    return { gasUsage: 59920, storageUsage: 150 };
+            const contractOverride = this.contractsOverride[`${destination}:${entrypoint}`];
+            if (contractOverride) {
+                return contractOverride;
             }
         }
         return null;

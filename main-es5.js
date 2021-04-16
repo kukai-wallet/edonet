@@ -2935,10 +2935,16 @@
                     contractAddress = _this$tokenService$ge.contractAddress,
                     id = _this$tokenService$ge.id;
 
+                var txAmount = big_js__WEBPACK_IMPORTED_MODULE_9___default()(Math.pow(10, decimals)).times(transactions[i].amount);
+
+                if (!txAmount.mod(1).eq(0)) {
+                  throw new Error("the amount ".concat(transactions[i].amount, " is not within ").concat(decimals, " decimals"));
+                }
+
                 if (kind === 'FA1.2') {
-                  invocation = this.getFA12Transaction(pkh, transactions[i].to, big_js__WEBPACK_IMPORTED_MODULE_9___default()(Math.pow(10, decimals)).times(transactions[i].amount).toString());
+                  invocation = this.getFA12Transaction(pkh, transactions[i].to, txAmount.toFixed(0));
                 } else if (kind === 'FA2') {
-                  invocation = this.getFA2Transaction(pkh, transactions[i].to, big_js__WEBPACK_IMPORTED_MODULE_9___default()(Math.pow(10, decimals)).times(transactions[i].amount).toString(), id);
+                  invocation = this.getFA2Transaction(pkh, transactions[i].to, txAmount.toFixed(0), id);
                 } else {
                   throw new Error('Unrecognized token kind');
                 }
@@ -8671,6 +8677,21 @@
                 shouldPreferSymbol: true
               }
             }
+          }
+        },
+        CONTRACT_OVERRIDES: {
+          // mystery map
+          'KT1TWb6cE56q2L8yTeNNchXqDSXacrNqyVNZ:reward': {
+            storageUsage: 150,
+            gasUsage: 59920
+          },
+          'KT1RUSCZ7pJ3WNTuXFD44UpStmNRjA459guZ:reward': {
+            storageUsage: 150,
+            gasUsage: 59920
+          },
+          'KT1PrNd3sy1pLAqGtft47dzG4v8KizqPJntT:reward': {
+            storageUsage: 150,
+            gasUsage: 59920
           }
         }
       };
@@ -18330,7 +18351,7 @@
             _classCallCheck(this, TzktService);
 
             this.network = _environments_environment__WEBPACK_IMPORTED_MODULE_2__["CONSTANTS"].NETWORK.replace('edonet', 'edo2net');
-            this.bcd = 'https://api.test.better-call.dev/v1';
+            this.bcd = 'https://api.better-call.dev/v1';
             this.BCD_TOKEN_QUERY_SIZE = 10;
           }
 
@@ -19626,6 +19647,7 @@
           this.revealGasLimit = 1000;
           this.queue = [];
           this.nodeURL = _environments_environment__WEBPACK_IMPORTED_MODULE_7__["CONSTANTS"].NODE_URL;
+          this.contractsOverride = _environments_environment__WEBPACK_IMPORTED_MODULE_7__["CONSTANTS"].CONTRACT_OVERRIDES;
         }
 
         _createClass(EstimateService, [{
@@ -20107,7 +20129,11 @@
             var customUsage = this.getUsageException(content);
 
             if (customUsage) {
-              return customUsage;
+              // if there is a usageException then override values
+              return Object.assign({
+                gasUsage: gasUsage,
+                storageUsage: storageUsage
+              }, customUsage);
             }
 
             return {
@@ -20241,24 +20267,10 @@
             var destination = content === null || content === void 0 ? void 0 : content.destination;
 
             if (entrypoint && destination) {
-              switch ("".concat(destination, ":").concat(entrypoint)) {
-                case 'KT1TWb6cE56q2L8yTeNNchXqDSXacrNqyVNZ:reward':
-                  return {
-                    gasUsage: 59920,
-                    storageUsage: 150
-                  };
+              var contractOverride = this.contractsOverride["".concat(destination, ":").concat(entrypoint)];
 
-                case 'KT1RUSCZ7pJ3WNTuXFD44UpStmNRjA459guZ:reward':
-                  return {
-                    gasUsage: 59920,
-                    storageUsage: 150
-                  };
-
-                case 'KT1PrNd3sy1pLAqGtft47dzG4v8KizqPJntT:reward':
-                  return {
-                    gasUsage: 59920,
-                    storageUsage: 150
-                  };
+              if (contractOverride) {
+                return contractOverride;
               }
             }
 
