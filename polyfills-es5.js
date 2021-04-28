@@ -282,7 +282,25 @@
     },
 
     /***/
-    14:
+    "149L":
+    /*!*******************************************************************************************!*\
+      !*** ./node_modules/@angular-devkit/build-angular/node_modules/core-js/internals/html.js ***!
+      \*******************************************************************************************/
+
+    /*! no static exports found */
+
+    /***/
+    function L(module, exports, __webpack_require__) {
+      var getBuiltIn = __webpack_require__(
+      /*! ../internals/get-built-in */
+      "Ew/G");
+
+      module.exports = getBuiltIn('document', 'documentElement');
+      /***/
+    },
+
+    /***/
+    15:
     /*!***********************************************************************************************************************************!*\
       !*** multi ./node_modules/@angular-devkit/build-angular/src/webpack/es5-polyfills.js zone.js/dist/zone-legacy ./src/polyfills.ts ***!
       \***********************************************************************************************************************************/
@@ -302,24 +320,6 @@
       module.exports = __webpack_require__(
       /*! C:\Users\klas_\Git\kukai\src\polyfills.ts */
       "hN/g");
-      /***/
-    },
-
-    /***/
-    "149L":
-    /*!*******************************************************************************************!*\
-      !*** ./node_modules/@angular-devkit/build-angular/node_modules/core-js/internals/html.js ***!
-      \*******************************************************************************************/
-
-    /*! no static exports found */
-
-    /***/
-    function L(module, exports, __webpack_require__) {
-      var getBuiltIn = __webpack_require__(
-      /*! ../internals/get-built-in */
-      "Ew/G");
-
-      module.exports = getBuiltIn('document', 'documentElement');
       /***/
     },
 
@@ -21416,6 +21416,6 @@
       });
       /***/
     }
-  }, [[14, "runtime"]]]);
+  }, [[15, "runtime"]]]);
 })();
 //# sourceMappingURL=polyfills-es5.js.map

@@ -766,9 +766,9 @@ MessageService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineIn
 /***/ }),
 
 /***/ 11:
-/*!**********************!*\
-  !*** util (ignored) ***!
-  \**********************/
+/*!************************!*\
+  !*** buffer (ignored) ***!
+  \************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -788,6 +788,17 @@ MessageService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineIn
 /***/ }),
 
 /***/ 13:
+/*!**********************!*\
+  !*** util (ignored) ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/* (ignored) */
+
+/***/ }),
+
+/***/ 14:
 /*!********************!*\
   !*** fs (ignored) ***!
   \********************/
@@ -3119,7 +3130,7 @@ DeeplinkService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineI
 
 /***/ 5:
 /*!************************!*\
-  !*** crypto (ignored) ***!
+  !*** buffer (ignored) ***!
   \************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -3129,9 +3140,9 @@ DeeplinkService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineI
 /***/ }),
 
 /***/ 6:
-/*!********************!*\
-  !*** fs (ignored) ***!
-  \********************/
+/*!************************!*\
+  !*** crypto (ignored) ***!
+  \************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -3195,9 +3206,9 @@ IndexerService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineIn
 /***/ }),
 
 /***/ 7:
-/*!*******************************************!*\
-  !*** ../../src/methods/node.js (ignored) ***!
-  \*******************************************/
+/*!********************!*\
+  !*** fs (ignored) ***!
+  \********************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -3206,9 +3217,9 @@ IndexerService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineIn
 /***/ }),
 
 /***/ 8:
-/*!***************************!*\
-  !*** ./node.js (ignored) ***!
-  \***************************/
+/*!*******************************************!*\
+  !*** ../../src/methods/node.js (ignored) ***!
+  \*******************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -5293,9 +5304,9 @@ TorusComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineCom
 /***/ }),
 
 /***/ 9:
-/*!************************!*\
-  !*** buffer (ignored) ***!
-  \************************/
+/*!***************************!*\
+  !*** ./node.js (ignored) ***!
+  \***************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
