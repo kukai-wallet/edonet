@@ -282,6 +282,30 @@
     },
 
     /***/
+    14:
+    /*!***********************************************************************************************************************************!*\
+      !*** multi ./node_modules/@angular-devkit/build-angular/src/webpack/es5-polyfills.js zone.js/dist/zone-legacy ./src/polyfills.ts ***!
+      \***********************************************************************************************************************************/
+
+    /*! no static exports found */
+
+    /***/
+    function _(module, exports, __webpack_require__) {
+      __webpack_require__(
+      /*! C:\Users\klas_\Git\kukai-icabod\node_modules\@angular-devkit\build-angular\src\webpack\es5-polyfills.js */
+      "voQr");
+
+      __webpack_require__(
+      /*! zone.js/dist/zone-legacy */
+      "R0gw");
+
+      module.exports = __webpack_require__(
+      /*! C:\Users\klas_\Git\kukai-icabod\src\polyfills.ts */
+      "hN/g");
+      /***/
+    },
+
+    /***/
     "149L":
     /*!*******************************************************************************************!*\
       !*** ./node_modules/@angular-devkit/build-angular/node_modules/core-js/internals/html.js ***!
@@ -296,30 +320,6 @@
       "Ew/G");
 
       module.exports = getBuiltIn('document', 'documentElement');
-      /***/
-    },
-
-    /***/
-    15:
-    /*!***********************************************************************************************************************************!*\
-      !*** multi ./node_modules/@angular-devkit/build-angular/src/webpack/es5-polyfills.js zone.js/dist/zone-legacy ./src/polyfills.ts ***!
-      \***********************************************************************************************************************************/
-
-    /*! no static exports found */
-
-    /***/
-    function _(module, exports, __webpack_require__) {
-      __webpack_require__(
-      /*! C:\Users\klas_\Git\kukai\node_modules\@angular-devkit\build-angular\src\webpack\es5-polyfills.js */
-      "voQr");
-
-      __webpack_require__(
-      /*! zone.js/dist/zone-legacy */
-      "R0gw");
-
-      module.exports = __webpack_require__(
-      /*! C:\Users\klas_\Git\kukai\src\polyfills.ts */
-      "hN/g");
       /***/
     },
 
@@ -21416,6 +21416,6 @@
       });
       /***/
     }
-  }, [[15, "runtime"]]]);
+  }, [[14, "runtime"]]]);
 })();
 //# sourceMappingURL=polyfills-es5.js.map
