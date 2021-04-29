@@ -6699,6 +6699,9 @@ class SendComponent {
                             this.tokenTransfer = tokenTransferObj.tokenId;
                             delete txs[0].parameters;
                         }
+                        else {
+                            this.tokenTransfer = '';
+                        }
                         this.simulateRequest(txs, tokenTransferObj === null || tokenTransferObj === void 0 ? void 0 : tokenTransferObj.tokenId);
                     }
                     else {
@@ -15940,7 +15943,7 @@ function ConfirmSendComponent_div_0_ng_template_18_Template(rf, ctx) { if (rf & 
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](0, "img", 28);
 } if (rf & 2) {
     const ctx_r5 = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵnextContext"](2);
-    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵpropertyInterpolate"]("src", ctx_r5.tokenService.getAsset(ctx_r5.tokenTransfer).thumbnailUrl, _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵsanitizeUrl"]);
+    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵpropertyInterpolate"]("src", ctx_r5.tokenService.getAsset(ctx_r5.tokenTransfer).displayUrl, _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵsanitizeUrl"]);
 } }
 function ConfirmSendComponent_div_0_ng_container_20_span_1_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](0, "span", 32);

@@ -10809,6 +10809,8 @@
                               txs[0].destination = tokenTransferObj.to;
                               this.tokenTransfer = tokenTransferObj.tokenId;
                               delete txs[0].parameters;
+                            } else {
+                              this.tokenTransfer = '';
                             }
 
                             this.simulateRequest(txs, tokenTransferObj === null || tokenTransferObj === void 0 ? void 0 : tokenTransferObj.tokenId);
@@ -28568,7 +28570,7 @@
         if (rf & 2) {
           var ctx_r5 = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵnextContext"](2);
 
-          _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵpropertyInterpolate"]("src", ctx_r5.tokenService.getAsset(ctx_r5.tokenTransfer).thumbnailUrl, _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵsanitizeUrl"]);
+          _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵpropertyInterpolate"]("src", ctx_r5.tokenService.getAsset(ctx_r5.tokenTransfer).displayUrl, _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵsanitizeUrl"]);
         }
       }
 
