@@ -5883,9 +5883,10 @@ class TokenService {
         }
         else {
             const token = this.exploredIds[tokenId];
-            const timeout = (token.lastCheck - token.firstCheck) > 600000;
-            const reCheck = (now - token.lastCheck) > 15000;
-            if (timeout || !reCheck) {
+            let t1 = (token.lastCheck - token.firstCheck);
+            t1 = (t1 < 300000) ? 20000 : t1;
+            const t2 = (now - token.lastCheck);
+            if (t1 > t2) {
                 return false;
             }
             this.exploredIds[tokenId].lastCheck = now;
@@ -10786,7 +10787,7 @@ class TokenComponent {
         const tokenKey = `${this.token.contractAddress}:${this.token.id}`;
         const tokenBalance = this.account.getTokenBalance(tokenKey);
         if (this.token.name === '[Unknown token]') {
-            return (this.tokenService.searchTimeMs(tokenKey) > 90000) ? this.token.name : 'Searching for metadata...';
+            return (this.tokenService.searchTimeMs(tokenKey) > 150000) ? this.token.name : 'Searching for metadata...';
         }
         return this.tokenService.formatAmount(tokenKey, tokenBalance);
     }
@@ -14991,7 +14992,7 @@ function MnemonicImportComponent_div_1_ng_container_12_div_12_Template(rf, ctx) 
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵlistener"]("change", function MnemonicImportComponent_div_1_ng_container_12_div_12_Template_input_change_2_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵrestoreView"](_r25); const ctx_r24 = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵnextContext"](3); return ctx_r24.hdImport = !ctx_r24.hdImport; });
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](3, "small");
-    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](4, "Legacy wallet");
+    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](4, "HD wallet");
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](5, "div");
@@ -14999,7 +15000,7 @@ function MnemonicImportComponent_div_1_ng_container_12_div_12_Template(rf, ctx) 
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵlistener"]("change", function MnemonicImportComponent_div_1_ng_container_12_div_12_Template_input_change_6_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵrestoreView"](_r25); const ctx_r26 = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵnextContext"](3); return ctx_r26.hdImport = !ctx_r26.hdImport; });
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](7, "small");
-    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](8, "HD wallet");
+    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](8, "Legacy wallet");
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
@@ -15157,7 +15158,7 @@ function MnemonicImportComponent_div_3_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](5, "Your wallet is now set up and ready to be used.");
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](6, "p", 35);
-    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](7, "Download your encrypted keystore file and import it when you want to access your wallet.");
+    _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](7, "Download your encrypted keystore file and import it when you want to access your wallet. ");
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](8, "div", 36);
     _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](9, "p", 37);
@@ -15196,7 +15197,7 @@ class MnemonicImportComponent {
         this.MIN_PWD_LENGTH = 9;
         this.importOption = 0;
         this.activePanel = 0;
-        this.hdImport = false;
+        this.hdImport = true;
         this.pwd = '';
         this.pwdStrength = '';
         this.Downloaded = false;
@@ -15482,7 +15483,7 @@ class MnemonicImportComponent {
 MnemonicImportComponent.ɵfac = function MnemonicImportComponent_Factory(t) { return new (t || MnemonicImportComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_ngx_translate_core__WEBPACK_IMPORTED_MODULE_3__["TranslateService"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_services_import_import_service__WEBPACK_IMPORTED_MODULE_4__["ImportService"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_2__["Router"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_services_message_message_service__WEBPACK_IMPORTED_MODULE_5__["MessageService"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_services_wallet_wallet_service__WEBPACK_IMPORTED_MODULE_6__["WalletService"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_services_export_export_service__WEBPACK_IMPORTED_MODULE_7__["ExportService"]), _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_services_input_validation_input_validation_service__WEBPACK_IMPORTED_MODULE_8__["InputValidationService"])); };
 MnemonicImportComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineComponent"]({ type: MnemonicImportComponent, selectors: [["app-mnemonic-import-wallet"]], hostVars: 2, hostBindings: function MnemonicImportComponent_HostBindings(rf, ctx) { if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵclassProp"]("tacos", ctx.showTacos);
-    } }, decls: 4, vars: 3, consts: [[1, "kukai-card"], [4, "ngIf"], [1, "import-options"], [3, "click"], [1, "grey-card", "menu"], [1, "description", "bold", 2, "font-size", "1rem"], ["type", "file", "id", "file", "name", "file", 1, "input-file", 3, "accept", "change"], ["for", "file", 1, "input-file"], ["class", "authenticate", 4, "ngIf"], [1, "buttons"], ["routerLink", "/"], [1, "button", "back"], [1, "button", "next", 3, "click"], [1, "authenticate"], ["type", "password", "autocomplete", "current-password", "id", "pwd", "placeholder", "Password", 1, "text", 3, "ngModel", "keydown.enter", "ngModelChange"], ["class", "description faucet", 4, "ngIf"], ["autocomplete", "off", 1, "text", 3, "ngModel", "placeholder", "ngModelChange"], ["type", "text", 1, "text", 3, "ngModel", "placeholder", "ngModelChange"], ["class", "radios", 4, "ngIf"], [1, "description", "faucet"], ["routerLink", "/activate"], ["type", "password", "name", "passphrase", "autocomplete", "one-time-code", 1, "text", 3, "ngModel", "placeholder", "ngModelChange"], ["type", "password", "name", "tge-password", "autocomplete", "one-time-code", 1, "text", 3, "ngModel", "placeholder", "ngModelChange"], [1, "radios"], ["type", "radio", "name", "walletType", "value", "legacy", "checked", "", 3, "change"], ["type", "radio", "name", "walletType", "value", "hd", 3, "change"], [1, "grey-card"], [1, "description", "bold", "blue"], [1, "description", 2, "margin-top", "1.25rem"], ["type", "password", "autocomplete", "new-password", 1, "text", 2, "margin-top", "2.5rem", 3, "placeholder", "ngModel", "ngModelChange", "keyup"], [1, "grey", 2, "margin-top", "0.5rem"], ["type", "password", "autocomplete", "new-password", 1, "text", 2, "margin-top", "1.5rem", 3, "placeholder", "ngModel", "ngModelChange"], [1, "buttons", 2, "margin-top", "3rem"], [2, "background-color", "#5963FF"], [1, "description", "bold"], [1, "description"], [1, "whitebox", "final"], [1, "description", "bold", "pkh"]], template: function MnemonicImportComponent_Template(rf, ctx) { if (rf & 1) {
+    } }, decls: 4, vars: 3, consts: [[1, "kukai-card"], [4, "ngIf"], [1, "import-options"], [3, "click"], [1, "grey-card", "menu"], [1, "description", "bold", 2, "font-size", "1rem"], ["type", "file", "id", "file", "name", "file", 1, "input-file", 3, "accept", "change"], ["for", "file", 1, "input-file"], ["class", "authenticate", 4, "ngIf"], [1, "buttons"], ["routerLink", "/"], [1, "button", "back"], [1, "button", "next", 3, "click"], [1, "authenticate"], ["type", "password", "autocomplete", "current-password", "id", "pwd", "placeholder", "Password", 1, "text", 3, "ngModel", "keydown.enter", "ngModelChange"], ["class", "description faucet", 4, "ngIf"], ["autocomplete", "off", 1, "text", 3, "ngModel", "placeholder", "ngModelChange"], ["type", "text", 1, "text", 3, "ngModel", "placeholder", "ngModelChange"], ["class", "radios", 4, "ngIf"], [1, "description", "faucet"], ["routerLink", "/activate"], ["type", "password", "name", "passphrase", "autocomplete", "one-time-code", 1, "text", 3, "ngModel", "placeholder", "ngModelChange"], ["type", "password", "name", "tge-password", "autocomplete", "one-time-code", 1, "text", 3, "ngModel", "placeholder", "ngModelChange"], [1, "radios"], ["type", "radio", "name", "walletType", "value", "hd", "checked", "", 3, "change"], ["type", "radio", "name", "walletType", "value", "legacy", 3, "change"], [1, "grey-card"], [1, "description", "bold", "blue"], [1, "description", 2, "margin-top", "1.25rem"], ["type", "password", "autocomplete", "new-password", 1, "text", 2, "margin-top", "2.5rem", 3, "placeholder", "ngModel", "ngModelChange", "keyup"], [1, "grey", 2, "margin-top", "0.5rem"], ["type", "password", "autocomplete", "new-password", 1, "text", 2, "margin-top", "1.5rem", 3, "placeholder", "ngModel", "ngModelChange"], [1, "buttons", 2, "margin-top", "3rem"], [2, "background-color", "#5963FF"], [1, "description", "bold"], [1, "description"], [1, "whitebox", "final"], [1, "description", "bold", "pkh"]], template: function MnemonicImportComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](0, "div", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtemplate"](1, MnemonicImportComponent_div_1_Template, 13, 8, "div", 1);
         _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtemplate"](2, MnemonicImportComponent_div_2_Template, 21, 14, "div", 1);
