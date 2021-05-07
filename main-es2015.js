@@ -2058,19 +2058,61 @@ class OperationService {
             throw new Error('Invalid private key');
         }
         const keyPair = (new elliptic__WEBPACK_IMPORTED_MODULE_14__["ec"]('secp256k1')).keyFromPrivate(new Uint8Array(this.b58cdecode(sk, this.prefix.spsk)));
-        const prefixVal = keyPair.getPublic().getY().toArray()[31] % 2 ? 3 : 2; // Y odd / even
+        const yArray = keyPair.getPublic().getY().toArray();
+        const prefixVal = yArray[yArray.length - 1] % 2 ? 3 : 2; // Y odd / even
         const pad = new Array(32).fill(0); // Zero-padding
         const publicKey = new Uint8Array([prefixVal].concat(pad.concat(keyPair.getPublic().getX().toArray()).slice(-32)));
         const pk = this.b58cencode(publicKey, this.prefix.sppk);
+        if (yArray.length < 32 && prefixVal === 3 && this.isInvertedPk(pk)) {
+            return this.spPrivKeyToKeyPair(this.invertSpsk(sk));
+        }
         const pkh = this.pk2pkh(pk);
         return { sk, pk, pkh };
     }
+    isInvertedPk(pk) {
+        /*
+          Detect keys with flipped sign and correct them.
+        */
+        const invertedPks = [
+            'sppk7cqh7BbgUMFh4yh95mUwEeg5aBPG1MBK1YHN7b9geyygrUMZByr',
+            'sppk7bMTva1MwF7cXjrcfoj6XVfcYgjrVaR9JKP3JxvPB121Ji5ftHT',
+            'sppk7bLtXf9CAVZh5jjDACezPnuwHf9CgVoAneNXQFgHknNtCyE5k8A'
+        ];
+        return invertedPks.includes(pk);
+    }
+    invertSpsk(sk) {
+        const x = new Uint8Array([...(new Uint8Array(32).fill(0)), ...this.b58cdecode(sk, this.prefix.spsk)]).slice(-32);
+        const p = this.hex2buf('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141'.toLowerCase());
+        let inv = []; // p - x
+        let remainder = 0;
+        for (let i = 31; i >= 0; i--) {
+            let sub = p[i] - x[i] - remainder;
+            if (sub < 0) {
+                sub += 256;
+                remainder = 1;
+            }
+            else {
+                remainder = 0;
+            }
+            inv.push(sub);
+        }
+        if (remainder) {
+            throw new Error('Invalid X');
+        }
+        inv = inv.reverse();
+        return this.buf2hex(inv);
+    }
     spPointsToPkh(pubX, pubY) {
         const key = (new elliptic__WEBPACK_IMPORTED_MODULE_14__["ec"]('secp256k1')).keyFromPublic({ x: pubX, y: pubY });
-        const prefixVal = key.getPublic().getY().toArray()[31] % 2 ? 3 : 2;
+        const yArray = key.getPublic().getY().toArray();
+        const prefixVal = yArray[yArray.length - 1] % 2 ? 3 : 2;
         const pad = new Array(32).fill(0);
-        const publicKey = new Uint8Array([prefixVal].concat(pad.concat(key.getPublic().getX().toArray()).slice(-32)));
-        const pk = this.b58cencode(publicKey, this.prefix.sppk);
+        let publicKey = new Uint8Array([prefixVal].concat(pad.concat(key.getPublic().getX().toArray()).slice(-32)));
+        let pk = this.b58cencode(publicKey, this.prefix.sppk);
+        if (yArray.length < 32 && prefixVal === 3 && this.isInvertedPk(pk)) {
+            publicKey = new Uint8Array([2].concat(pad.concat(key.getPublic().getX().toArray()).slice(-32)));
+            pk = this.b58cencode(publicKey, this.prefix.sppk);
+        }
         const pkh = this.pk2pkh(pk);
         return pkh;
     }
@@ -5745,7 +5787,7 @@ class TokenService {
     constructor(indexerService) {
         this.indexerService = indexerService;
         this.AUTO_DISCOVER = true;
-        this.version = '1.0.7';
+        this.version = '1.0.8';
         this.contracts = {};
         this.exploredIds = {};
         this.storeKey = 'tokenMetadata';
@@ -6820,7 +6862,7 @@ class SendComponent {
             network = network.plus(op.fee);
             storageLimit = storageLimit.plus(op.storageLimit);
         }
-        let storage = storageLimit.times(this.estimateService.costPerByte);
+        let storage = storageLimit.times(this.estimateService.costPerByte).div('1000000');
         const total = network.plus(storage).toFixed();
         network = network.toFixed();
         storage = storage.toFixed();
@@ -10455,7 +10497,7 @@ class TzktService {
                 if ((_a = data === null || data === void 0 ? void 0 : data.tags) === null || _a === void 0 ? void 0 : _a.includes('fa2')) {
                     return 'FA2';
                 }
-                else if (data === null || data === void 0 ? void 0 : data.tags.includes('fa12')) {
+                else if (data === null || data === void 0 ? void 0 : data.tags.includes('fa1-2')) {
                     return 'FA1.2';
                 }
                 return null;
@@ -10468,10 +10510,10 @@ class TzktService {
                 .then(data => {
                 var _a, _b;
                 const meta = {};
-                if ((_a = data === null || data === void 0 ? void 0 : data.tags) === null || _a === void 0 ? void 0 : _a.includes('fa2')) {
+                if ((_a = data === null || data === void 0 ? void 0 : data.interfaces) === null || _a === void 0 ? void 0 : _a.includes('TZIP-012')) {
                     meta.tokenType = 'FA2';
                 }
-                else if ((_b = data === null || data === void 0 ? void 0 : data.tags) === null || _b === void 0 ? void 0 : _b.includes('fa2')) {
+                else if ((_b = data === null || data === void 0 ? void 0 : data.interfaces) === null || _b === void 0 ? void 0 : _b.includes('TZIP-007')) {
                     meta.tokenType = 'FA1.2';
                 }
                 if (data === null || data === void 0 ? void 0 : data.category) {

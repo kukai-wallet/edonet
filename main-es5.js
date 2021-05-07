@@ -13,14 +13,6 @@
 
   function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-  function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-  function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-  function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-  function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
   function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
   function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -30,6 +22,14 @@
   function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
   function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+  function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+  function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+  function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+  function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
   function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function (_e2) { function e(_x) { return _e2.apply(this, arguments); } e.toString = function () { return _e2.toString(); }; return e; }(function (e) { throw e; }), f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function (_e3) { function e(_x2) { return _e3.apply(this, arguments); } e.toString = function () { return _e3.toString(); }; return e; }(function (e) { didErr = true; err = e; }), f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 
@@ -3584,12 +3584,18 @@
             }
 
             var keyPair = new elliptic__WEBPACK_IMPORTED_MODULE_14__["ec"]('secp256k1').keyFromPrivate(new Uint8Array(this.b58cdecode(sk, this.prefix.spsk)));
-            var prefixVal = keyPair.getPublic().getY().toArray()[31] % 2 ? 3 : 2; // Y odd / even
+            var yArray = keyPair.getPublic().getY().toArray();
+            var prefixVal = yArray[yArray.length - 1] % 2 ? 3 : 2; // Y odd / even
 
             var pad = new Array(32).fill(0); // Zero-padding
 
             var publicKey = new Uint8Array([prefixVal].concat(pad.concat(keyPair.getPublic().getX().toArray()).slice(-32)));
             var pk = this.b58cencode(publicKey, this.prefix.sppk);
+
+            if (yArray.length < 32 && prefixVal === 3 && this.isInvertedPk(pk)) {
+              return this.spPrivKeyToKeyPair(this.invertSpsk(sk));
+            }
+
             var pkh = this.pk2pkh(pk);
             return {
               sk: sk,
@@ -3598,16 +3604,61 @@
             };
           }
         }, {
+          key: "isInvertedPk",
+          value: function isInvertedPk(pk) {
+            /*
+              Detect keys with flipped sign and correct them.
+            */
+            var invertedPks = ['sppk7cqh7BbgUMFh4yh95mUwEeg5aBPG1MBK1YHN7b9geyygrUMZByr', 'sppk7bMTva1MwF7cXjrcfoj6XVfcYgjrVaR9JKP3JxvPB121Ji5ftHT', 'sppk7bLtXf9CAVZh5jjDACezPnuwHf9CgVoAneNXQFgHknNtCyE5k8A'];
+            return invertedPks.includes(pk);
+          }
+        }, {
+          key: "invertSpsk",
+          value: function invertSpsk(sk) {
+            var x = new Uint8Array([].concat(_toConsumableArray(new Uint8Array(32).fill(0)), _toConsumableArray(this.b58cdecode(sk, this.prefix.spsk)))).slice(-32);
+            var p = this.hex2buf('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141'.toLowerCase());
+            var inv = []; // p - x
+
+            var remainder = 0;
+
+            for (var i = 31; i >= 0; i--) {
+              var sub = p[i] - x[i] - remainder;
+
+              if (sub < 0) {
+                sub += 256;
+                remainder = 1;
+              } else {
+                remainder = 0;
+              }
+
+              inv.push(sub);
+            }
+
+            if (remainder) {
+              throw new Error('Invalid X');
+            }
+
+            inv = inv.reverse();
+            return this.buf2hex(inv);
+          }
+        }, {
           key: "spPointsToPkh",
           value: function spPointsToPkh(pubX, pubY) {
             var key = new elliptic__WEBPACK_IMPORTED_MODULE_14__["ec"]('secp256k1').keyFromPublic({
               x: pubX,
               y: pubY
             });
-            var prefixVal = key.getPublic().getY().toArray()[31] % 2 ? 3 : 2;
+            var yArray = key.getPublic().getY().toArray();
+            var prefixVal = yArray[yArray.length - 1] % 2 ? 3 : 2;
             var pad = new Array(32).fill(0);
             var publicKey = new Uint8Array([prefixVal].concat(pad.concat(key.getPublic().getX().toArray()).slice(-32)));
             var pk = this.b58cencode(publicKey, this.prefix.sppk);
+
+            if (yArray.length < 32 && prefixVal === 3 && this.isInvertedPk(pk)) {
+              publicKey = new Uint8Array([2].concat(pad.concat(key.getPublic().getX().toArray()).slice(-32)));
+              pk = this.b58cencode(publicKey, this.prefix.sppk);
+            }
+
             var pkh = this.pk2pkh(pk);
             return pkh;
           }
@@ -8923,7 +8974,7 @@
 
           this.indexerService = indexerService;
           this.AUTO_DISCOVER = true;
-          this.version = '1.0.7';
+          this.version = '1.0.8';
           this.contracts = {};
           this.exploredIds = {};
           this.storeKey = 'tokenMetadata';
@@ -11029,7 +11080,7 @@
               _iterator9.f();
             }
 
-            var storage = storageLimit.times(this.estimateService.costPerByte);
+            var storage = storageLimit.times(this.estimateService.costPerByte).div('1000000');
             var total = network.plus(storage).toFixed();
             network = network.toFixed();
             storage = storage.toFixed();
@@ -17102,7 +17153,7 @@
 
                           if ((_a = data === null || data === void 0 ? void 0 : data.tags) === null || _a === void 0 ? void 0 : _a.includes('fa2')) {
                             return 'FA2';
-                          } else if (data === null || data === void 0 ? void 0 : data.tags.includes('fa12')) {
+                          } else if (data === null || data === void 0 ? void 0 : data.tags.includes('fa1-2')) {
                             return 'FA1.2';
                           }
 
@@ -17118,9 +17169,9 @@
 
                           var meta = {};
 
-                          if ((_a = data === null || data === void 0 ? void 0 : data.tags) === null || _a === void 0 ? void 0 : _a.includes('fa2')) {
+                          if ((_a = data === null || data === void 0 ? void 0 : data.interfaces) === null || _a === void 0 ? void 0 : _a.includes('TZIP-012')) {
                             meta.tokenType = 'FA2';
-                          } else if ((_b = data === null || data === void 0 ? void 0 : data.tags) === null || _b === void 0 ? void 0 : _b.includes('fa2')) {
+                          } else if ((_b = data === null || data === void 0 ? void 0 : data.interfaces) === null || _b === void 0 ? void 0 : _b.includes('TZIP-007')) {
                             meta.tokenType = 'FA1.2';
                           }
 
