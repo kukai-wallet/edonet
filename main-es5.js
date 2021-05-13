@@ -6304,7 +6304,11 @@
                   this.openModal();
                   this.balance = big_js__WEBPACK_IMPORTED_MODULE_9___default()(this.operationRequest.operationDetails[0].balance).div(Math.pow(10, 6)).toFixed();
                   this.script = this.operationRequest.operationDetails[0].script;
-                  this.estimateFees();
+                  var recommendations = {
+                    gasRecommendation: this.operationRequest.operationDetails[0].gas_limit ? this.operationRequest.operationDetails[0].gas_limit : undefined,
+                    storageRecommendation: this.operationRequest.operationDetails[0].storage_limit ? this.operationRequest.operationDetails[0].storage_limit : undefined
+                  };
+                  this.estimateFees(recommendations);
                 } else {
                   console.warn('Invalid origination');
                   this.operationResponse.emit('parameters_error');
@@ -6352,6 +6356,7 @@
         }, {
           key: "estimateFees",
           value: function estimateFees() {
+            var recommendations = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee19() {
               var _this23 = this;
 
@@ -6378,7 +6383,7 @@
                       return this.estimateService.preLoadData(this.activeAccount.pkh, this.activeAccount.pk);
 
                     case 4:
-                      this.estimateService.estimateOrigination(this.getOrigination(), this.activeAccount.pkh, callback);
+                      this.estimateService.estimateOrigination(Object.assign(Object.assign({}, this.getOrigination()), recommendations), this.activeAccount.pkh, callback);
 
                     case 5:
                     case "end":
@@ -11032,7 +11037,9 @@
                             kind: 'transaction',
                             destination: tx.destination,
                             amount: big_js__WEBPACK_IMPORTED_MODULE_8___default()(tx.amount).div(Math.pow(10, 6)).toFixed(),
-                            parameters: tx.parameters ? tx.parameters : undefined
+                            parameters: tx.parameters ? tx.parameters : undefined,
+                            gasRecommendation: tx.gas_limit ? tx.gas_limit : undefined,
+                            storageRecommendation: tx.storage_limit ? tx.storage_limit : undefined
                           };
                         });
 
@@ -18415,6 +18422,7 @@
       };
       var hardGasLimit = 1040000;
       var hardStorageLimit = 60000;
+      var extraGas = 80;
 
       var EstimateService = /*#__PURE__*/function () {
         function EstimateService(http, operationService) {
@@ -18628,25 +18636,26 @@
           key: "_estimate",
           value: function _estimate(operations, from, tokenTransfer) {
             var isOrigination = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+
+            var _a;
+
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee68() {
               var _this39 = this;
 
-              var extraGas, simulation, _iterator19, _step19, tx, op, result, reveal, limits, _iterator20, _step20, content, _this$getOpUsage, gasUsage, storageUsage;
+              var simulation, _iterator19, _step19, tx, op, result, reveal, limits, i, index, opObj, _this$getOpUsage, gasUsage, storageUsage;
 
               return regeneratorRuntime.wrap(function _callee68$(_context69) {
                 while (1) {
                   switch (_context69.prev = _context69.next) {
                     case 0:
-                      extraGas = 80;
-
                       if (this.hash) {
-                        _context69.next = 3;
+                        _context69.next = 2;
                         break;
                       }
 
                       return _context69.abrupt("return", null);
 
-                    case 3:
+                    case 2:
                       simulation = {
                         fee: 0,
                         gasLimit: hardGasLimit,
@@ -18679,89 +18688,71 @@
                       }
 
                       if (!(this.hash && this.counter && (this.manager || this.manager === null))) {
-                        _context69.next = 47;
+                        _context69.next = 38;
                         break;
                       }
 
                       op = isOrigination ? this.operationService.createOriginationObject(this.hash, this.counter, this.manager, operations[0], simulation.fee, this.pk, this.pkh) : this.operationService.createTransactionObject(this.hash, this.counter, this.manager, operations, this.pkh, this.pk, from, simulation.fee, tokenTransfer);
-                      _context69.next = 10;
+                      _context69.next = 9;
                       return this.simulate(op).toPromise()["catch"](function (e) {
                         console.warn(e);
                         return null;
                       });
 
-                    case 10:
+                    case 9:
                       result = _context69.sent;
 
                       if (!(result && result.contents)) {
-                        _context69.next = 44;
+                        _context69.next = 35;
                         break;
                       }
 
                       reveal = false;
                       limits = [];
-                      _iterator20 = _createForOfIteratorHelper(result.contents);
-                      _context69.prev = 15;
+                      _context69.t0 = regeneratorRuntime.keys(result.contents);
 
-                      _iterator20.s();
-
-                    case 17:
-                      if ((_step20 = _iterator20.n()).done) {
-                        _context69.next = 31;
+                    case 14:
+                      if ((_context69.t1 = _context69.t0()).done) {
+                        _context69.next = 30;
                         break;
                       }
 
-                      content = _step20.value;
+                      i = _context69.t1.value;
 
-                      if (!(content.kind === 'reveal')) {
-                        _context69.next = 23;
+                      if (!(result.contents[i].kind === 'reveal')) {
+                        _context69.next = 20;
                         break;
                       }
 
                       reveal = true;
-                      _context69.next = 29;
+                      _context69.next = 28;
                       break;
 
-                    case 23:
-                      if (!(['transaction', 'origination'].includes(content.kind) && content.metadata.operation_result.status === 'applied')) {
-                        _context69.next = 28;
+                    case 20:
+                      if (!(['transaction', 'origination'].includes(result.contents[i].kind) && result.contents[i].metadata.operation_result.status === 'applied')) {
+                        _context69.next = 27;
                         break;
                       }
 
-                      _this$getOpUsage = this.getOpUsage(content), gasUsage = _this$getOpUsage.gasUsage, storageUsage = _this$getOpUsage.storageUsage;
+                      index = Number(i) + (((_a = result.contents[0]) === null || _a === void 0 ? void 0 : _a.kind) === 'reveal' ? -1 : 0);
+                      opObj = index > -1 ? operations[index] : null;
+                      _this$getOpUsage = this.getOpUsage(result.contents[i], opObj), gasUsage = _this$getOpUsage.gasUsage, storageUsage = _this$getOpUsage.storageUsage;
                       limits.push({
                         gasLimit: gasUsage + extraGas,
                         storageLimit: storageUsage
                       });
-                      _context69.next = 29;
+                      _context69.next = 28;
                       break;
 
-                    case 28:
+                    case 27:
                       return _context69.abrupt("return", null);
 
-                    case 29:
-                      _context69.next = 17;
+                    case 28:
+                      _context69.next = 14;
                       break;
 
-                    case 31:
-                      _context69.next = 36;
-                      break;
-
-                    case 33:
-                      _context69.prev = 33;
-                      _context69.t0 = _context69["catch"](15);
-
-                      _iterator20.e(_context69.t0);
-
-                    case 36:
-                      _context69.prev = 36;
-
-                      _iterator20.f();
-
-                      return _context69.finish(36);
-
-                    case 39:
-                      _context69.next = 41;
+                    case 30:
+                      _context69.next = 32;
                       return this.operationService.localForge(op).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["flatMap"])(function (fop) {
                         var bytes = fop.length / 2 + 64;
 
@@ -18781,32 +18772,32 @@
                         return Object(rxjs__WEBPACK_IMPORTED_MODULE_5__["of"])(dtp);
                       })).toPromise();
 
-                    case 41:
+                    case 32:
                       return _context69.abrupt("return", _context69.sent);
 
-                    case 44:
+                    case 35:
                       if (!(typeof result.success === 'boolean' && result.success === false)) {
-                        _context69.next = 47;
+                        _context69.next = 38;
                         break;
                       }
 
                       console.log(result);
                       throw new Error(result.payload.msg);
 
-                    case 47:
+                    case 38:
                       return _context69.abrupt("return", null);
 
-                    case 48:
+                    case 39:
                     case "end":
                       return _context69.stop();
                   }
                 }
-              }, _callee68, this, [[15, 33, 36, 39]]);
+              }, _callee68, this);
             }));
           }
         }, {
           key: "getOpUsage",
-          value: function getOpUsage(content) {
+          value: function getOpUsage(content, op) {
             var gasUsage = 0;
             var burn = big_js__WEBPACK_IMPORTED_MODULE_6___default()(0);
 
@@ -18821,15 +18812,34 @@
             }
 
             if (content.metadata.operation_result.balance_updates) {
-              var _iterator21 = _createForOfIteratorHelper(content.metadata.operation_result.balance_updates),
+              var _iterator20 = _createForOfIteratorHelper(content.metadata.operation_result.balance_updates),
+                  _step20;
+
+              try {
+                for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
+                  var balanceUpdate = _step20.value;
+
+                  if (balanceUpdate.contract === this.pkh) {
+                    burn = burn.minus(balanceUpdate.change);
+                  }
+                }
+              } catch (err) {
+                _iterator20.e(err);
+              } finally {
+                _iterator20.f();
+              }
+            }
+
+            if (content.metadata.balance_updates) {
+              var _iterator21 = _createForOfIteratorHelper(content.metadata.balance_updates),
                   _step21;
 
               try {
                 for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
-                  var balanceUpdate = _step21.value;
+                  var _balanceUpdate = _step21.value;
 
-                  if (balanceUpdate.contract === this.pkh) {
-                    burn = burn.minus(balanceUpdate.change);
+                  if (_balanceUpdate.contract === this.pkh) {
+                    burn = burn.minus(_balanceUpdate.change);
                   }
                 }
               } catch (err) {
@@ -18839,16 +18849,39 @@
               }
             }
 
-            if (content.metadata.balance_updates) {
-              var _iterator22 = _createForOfIteratorHelper(content.metadata.balance_updates),
+            gasUsage += content.metadata.operation_result.consumed_gas ? Number(content.metadata.operation_result.consumed_gas) : 0;
+
+            if (content.metadata.internal_operation_results) {
+              var _iterator22 = _createForOfIteratorHelper(content.metadata.internal_operation_results),
                   _step22;
 
               try {
                 for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
-                  var _balanceUpdate = _step22.value;
+                  var internalResult = _step22.value;
 
-                  if (_balanceUpdate.contract === this.pkh) {
-                    burn = burn.minus(_balanceUpdate.change);
+                  if (internalResult.result) {
+                    if (internalResult.result.consumed_gas) {
+                      gasUsage += internalResult.result && internalResult.result.consumed_gas ? Number(internalResult.result.consumed_gas) : 0;
+                    }
+
+                    if (internalResult.result.balance_updates) {
+                      var _iterator23 = _createForOfIteratorHelper(internalResult.result.balance_updates),
+                          _step23;
+
+                      try {
+                        for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
+                          var _balanceUpdate2 = _step23.value;
+
+                          if (_balanceUpdate2.contract === this.pkh && _balanceUpdate2.change.slice(0, 1) === '-') {
+                            burn = burn.minus(_balanceUpdate2.change);
+                          }
+                        }
+                      } catch (err) {
+                        _iterator23.e(err);
+                      } finally {
+                        _iterator23.f();
+                      }
+                    }
                   }
                 }
               } catch (err) {
@@ -18858,55 +18891,13 @@
               }
             }
 
-            gasUsage += content.metadata.operation_result.consumed_gas ? Number(content.metadata.operation_result.consumed_gas) : 0;
-
-            if (content.metadata.internal_operation_results) {
-              var _iterator23 = _createForOfIteratorHelper(content.metadata.internal_operation_results),
-                  _step23;
-
-              try {
-                for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
-                  var internalResult = _step23.value;
-
-                  if (internalResult.result) {
-                    if (internalResult.result.consumed_gas) {
-                      gasUsage += internalResult.result && internalResult.result.consumed_gas ? Number(internalResult.result.consumed_gas) : 0;
-                    }
-
-                    if (internalResult.result.balance_updates) {
-                      var _iterator24 = _createForOfIteratorHelper(internalResult.result.balance_updates),
-                          _step24;
-
-                      try {
-                        for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
-                          var _balanceUpdate2 = _step24.value;
-
-                          if (_balanceUpdate2.contract === this.pkh && _balanceUpdate2.change.slice(0, 1) === '-') {
-                            burn = burn.minus(_balanceUpdate2.change);
-                          }
-                        }
-                      } catch (err) {
-                        _iterator24.e(err);
-                      } finally {
-                        _iterator24.f();
-                      }
-                    }
-                  }
-                }
-              } catch (err) {
-                _iterator23.e(err);
-              } finally {
-                _iterator23.f();
-              }
-            }
-
             var storageUsage = Math.round(burn / Number(this.costPerByte));
 
             if (gasUsage < 0 || gasUsage > hardGasLimit || storageUsage < 0 || storageUsage > hardStorageLimit) {
               throw new Error('InvalidUsageCalculation');
             }
 
-            var customUsage = this.getUsageException(content);
+            var customUsage = this.getUsageException(content, op);
 
             if (customUsage) {
               // if there is a usageException then override values
@@ -18939,19 +18930,19 @@
               numberOfOperations++;
             }
 
-            var _iterator25 = _createForOfIteratorHelper(limits),
-                _step25;
+            var _iterator24 = _createForOfIteratorHelper(limits),
+                _step24;
 
             try {
-              for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
-                var data = _step25.value;
+              for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
+                var data = _step24.value;
                 gasUnits += data.gasLimit;
                 numberOfOperations++;
               }
             } catch (err) {
-              _iterator25.e(err);
+              _iterator24.e(err);
             } finally {
-              _iterator25.f();
+              _iterator24.f();
             }
 
             bytes += 10 * numberOfOperations; // add 10 extra bytes for variation in amount & fee
@@ -18963,18 +18954,18 @@
           value: function averageGasLimit(limits) {
             var totalGasLimit = 0;
 
-            var _iterator26 = _createForOfIteratorHelper(limits),
-                _step26;
+            var _iterator25 = _createForOfIteratorHelper(limits),
+                _step25;
 
             try {
-              for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
-                var data = _step26.value;
+              for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
+                var data = _step25.value;
                 totalGasLimit += data.gasLimit;
               }
             } catch (err) {
-              _iterator26.e(err);
+              _iterator25.e(err);
             } finally {
-              _iterator26.f();
+              _iterator25.f();
             }
 
             return Math.ceil(totalGasLimit / limits.length);
@@ -18984,18 +18975,18 @@
           value: function averageStorageLimit(limits) {
             var totalStorageLimit = 0;
 
-            var _iterator27 = _createForOfIteratorHelper(limits),
-                _step27;
+            var _iterator26 = _createForOfIteratorHelper(limits),
+                _step26;
 
             try {
-              for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
-                var data = _step27.value;
+              for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
+                var data = _step26.value;
                 totalStorageLimit += data.storageLimit;
               }
             } catch (err) {
-              _iterator27.e(err);
+              _iterator26.e(err);
             } finally {
-              _iterator27.f();
+              _iterator26.f();
             }
 
             return Math.ceil(totalStorageLimit / limits.length);
@@ -19005,18 +18996,18 @@
           value: function burnFee(limits) {
             var totalStorageLimit = big_js__WEBPACK_IMPORTED_MODULE_6___default()(0);
 
-            var _iterator28 = _createForOfIteratorHelper(limits),
-                _step28;
+            var _iterator27 = _createForOfIteratorHelper(limits),
+                _step27;
 
             try {
-              for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
-                var data = _step28.value;
+              for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
+                var data = _step27.value;
                 totalStorageLimit = totalStorageLimit.plus(data.storageLimit);
               }
             } catch (err) {
-              _iterator28.e(err);
+              _iterator27.e(err);
             } finally {
-              _iterator28.f();
+              _iterator27.f();
             }
 
             return Number(big_js__WEBPACK_IMPORTED_MODULE_6___default()(totalStorageLimit).times(this.costPerByte).div('1000000').toString());
@@ -19040,7 +19031,7 @@
           }
         }, {
           key: "getUsageException",
-          value: function getUsageException(content) {
+          value: function getUsageException(content, op) {
             var _a;
 
             var entrypoint = (_a = content === null || content === void 0 ? void 0 : content.parameters) === null || _a === void 0 ? void 0 : _a.entrypoint;
@@ -19052,6 +19043,24 @@
               if (contractOverride) {
                 return contractOverride;
               }
+            }
+
+            if ((op === null || op === void 0 ? void 0 : op.gasRecommendation) || (op === null || op === void 0 ? void 0 : op.storageRecommendation)) {
+              var override = {};
+
+              if (op.gasRecommendation) {
+                override.gasUsage = Number(op.gasRecommendation) - extraGas;
+              }
+
+              if (op.storageRecommendation) {
+                override.storageUsage = Number(op.storageRecommendation);
+              }
+
+              console.log('Dapp recommendation', {
+                gas: op.gasRecommendation,
+                storage: op.storageRecommendation
+              });
+              return override;
             }
 
             return null;
@@ -23154,18 +23163,18 @@
           value: function getTotalAmount() {
             var totalSent = big_js__WEBPACK_IMPORTED_MODULE_6___default()(0);
 
-            var _iterator29 = _createForOfIteratorHelper(this.transactions),
-                _step29;
+            var _iterator28 = _createForOfIteratorHelper(this.transactions),
+                _step28;
 
             try {
-              for (_iterator29.s(); !(_step29 = _iterator29.n()).done;) {
-                var tx = _step29.value;
+              for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
+                var tx = _step28.value;
                 totalSent = totalSent.add(tx.amount);
               }
             } catch (err) {
-              _iterator29.e(err);
+              _iterator28.e(err);
             } finally {
-              _iterator29.f();
+              _iterator28.f();
             }
 
             return totalSent.toFixed();
@@ -23297,18 +23306,18 @@
             if (this.tokenTransfer) {
               data += transactions[0].to + transactions[0].amount.toString();
             } else {
-              var _iterator30 = _createForOfIteratorHelper(transactions),
-                  _step30;
+              var _iterator29 = _createForOfIteratorHelper(transactions),
+                  _step29;
 
               try {
-                for (_iterator30.s(); !(_step30 = _iterator30.n()).done;) {
-                  var tx = _step30.value;
+                for (_iterator29.s(); !(_step29 = _iterator29.n()).done;) {
+                  var tx = _step29.value;
                   data += tx.to;
                 }
               } catch (err) {
-                _iterator30.e(err);
+                _iterator29.e(err);
               } finally {
-                _iterator30.f();
+                _iterator29.f();
               }
             }
 
@@ -23511,18 +23520,18 @@
                 var max = big_js__WEBPACK_IMPORTED_MODULE_6___default()(this.maxToSend(this.activeAccount)).plus(this.tokenTransfer ? 0 : 0.000001);
                 var amount = big_js__WEBPACK_IMPORTED_MODULE_6___default()(0);
 
-                var _iterator31 = _createForOfIteratorHelper(this.transactions),
-                    _step31;
+                var _iterator30 = _createForOfIteratorHelper(this.transactions),
+                    _step30;
 
                 try {
-                  for (_iterator31.s(); !(_step31 = _iterator31.n()).done;) {
-                    var tx = _step31.value;
+                  for (_iterator30.s(); !(_step30 = _iterator30.n()).done;) {
+                    var tx = _step30.value;
                     amount = amount.plus(big_js__WEBPACK_IMPORTED_MODULE_6___default()(tx.amount));
                   }
                 } catch (err) {
-                  _iterator31.e(err);
+                  _iterator30.e(err);
                 } finally {
-                  _iterator31.f();
+                  _iterator30.f();
                 }
 
                 if (amount.gt(max)) {
@@ -23534,18 +23543,18 @@
 
                 var _amount2 = big_js__WEBPACK_IMPORTED_MODULE_6___default()(0);
 
-                var _iterator32 = _createForOfIteratorHelper(this.transactions),
-                    _step32;
+                var _iterator31 = _createForOfIteratorHelper(this.transactions),
+                    _step31;
 
                 try {
-                  for (_iterator32.s(); !(_step32 = _iterator32.n()).done;) {
-                    var _tx = _step32.value;
+                  for (_iterator31.s(); !(_step31 = _iterator31.n()).done;) {
+                    var _tx = _step31.value;
                     _amount2 = _amount2.plus(big_js__WEBPACK_IMPORTED_MODULE_6___default()(_tx.amount));
                   }
                 } catch (err) {
-                  _iterator32.e(err);
+                  _iterator31.e(err);
                 } finally {
-                  _iterator32.f();
+                  _iterator31.f();
                 }
 
                 if (_amount2.gt(maxKt)) {
@@ -24237,12 +24246,12 @@
             var tot = 0;
             var change = false;
 
-            var _iterator33 = _createForOfIteratorHelper(accounts),
-                _step33;
+            var _iterator32 = _createForOfIteratorHelper(accounts),
+                _step32;
 
             try {
-              for (_iterator33.s(); !(_step33 = _iterator33.n()).done;) {
-                var account = _step33.value;
+              for (_iterator32.s(); !(_step32 = _iterator32.n()).done;) {
+                var account = _step32.value;
 
                 if (account.balanceXTZ !== null) {
                   account.balanceUSD = Number(account.balanceXTZ / 1000000 * this.walletService.wallet.XTZrate);
@@ -24251,9 +24260,9 @@
                 }
               }
             } catch (err) {
-              _iterator33.e(err);
+              _iterator32.e(err);
             } finally {
-              _iterator33.f();
+              _iterator32.f();
             }
 
             if (change) {
@@ -25847,34 +25856,34 @@
             var accounts = [];
 
             if (this.implicitAccounts.length) {
-              var _iterator34 = _createForOfIteratorHelper(this.implicitAccounts),
-                  _step34;
+              var _iterator33 = _createForOfIteratorHelper(this.implicitAccounts),
+                  _step33;
 
               try {
-                for (_iterator34.s(); !(_step34 = _iterator34.n()).done;) {
-                  var implicitAccount = _step34.value;
+                for (_iterator33.s(); !(_step33 = _iterator33.n()).done;) {
+                  var implicitAccount = _step33.value;
                   accounts.push(implicitAccount);
 
                   if (implicitAccount.originatedAccounts.length) {
-                    var _iterator35 = _createForOfIteratorHelper(implicitAccount.originatedAccounts),
-                        _step35;
+                    var _iterator34 = _createForOfIteratorHelper(implicitAccount.originatedAccounts),
+                        _step34;
 
                     try {
-                      for (_iterator35.s(); !(_step35 = _iterator35.n()).done;) {
-                        var originatedAccount = _step35.value;
+                      for (_iterator34.s(); !(_step34 = _iterator34.n()).done;) {
+                        var originatedAccount = _step34.value;
                         accounts.push(originatedAccount);
                       }
                     } catch (err) {
-                      _iterator35.e(err);
+                      _iterator34.e(err);
                     } finally {
-                      _iterator35.f();
+                      _iterator34.f();
                     }
                   }
                 }
               } catch (err) {
-                _iterator34.e(err);
+                _iterator33.e(err);
               } finally {
-                _iterator34.f();
+                _iterator33.f();
               }
             }
 
@@ -25889,40 +25898,40 @@
           key: "getAccount",
           value: function getAccount(address) {
             if (this.implicitAccounts.length) {
-              var _iterator36 = _createForOfIteratorHelper(this.implicitAccounts),
-                  _step36;
+              var _iterator35 = _createForOfIteratorHelper(this.implicitAccounts),
+                  _step35;
 
               try {
-                for (_iterator36.s(); !(_step36 = _iterator36.n()).done;) {
-                  var implicitAccount = _step36.value;
+                for (_iterator35.s(); !(_step35 = _iterator35.n()).done;) {
+                  var implicitAccount = _step35.value;
 
                   if (implicitAccount.address === address) {
                     return implicitAccount;
                   }
 
                   if (implicitAccount.originatedAccounts.length) {
-                    var _iterator37 = _createForOfIteratorHelper(implicitAccount.originatedAccounts),
-                        _step37;
+                    var _iterator36 = _createForOfIteratorHelper(implicitAccount.originatedAccounts),
+                        _step36;
 
                     try {
-                      for (_iterator37.s(); !(_step37 = _iterator37.n()).done;) {
-                        var originatedAccount = _step37.value;
+                      for (_iterator36.s(); !(_step36 = _iterator36.n()).done;) {
+                        var originatedAccount = _step36.value;
 
                         if (originatedAccount.address === address) {
                           return originatedAccount;
                         }
                       }
                     } catch (err) {
-                      _iterator37.e(err);
+                      _iterator36.e(err);
                     } finally {
-                      _iterator37.f();
+                      _iterator36.f();
                     }
                   }
                 }
               } catch (err) {
-                _iterator36.e(err);
+                _iterator35.e(err);
               } finally {
-                _iterator36.f();
+                _iterator35.f();
               }
             }
 
@@ -25932,21 +25941,21 @@
           key: "getImplicitAccount",
           value: function getImplicitAccount(pkh) {
             if (this.implicitAccounts.length) {
-              var _iterator38 = _createForOfIteratorHelper(this.implicitAccounts),
-                  _step38;
+              var _iterator37 = _createForOfIteratorHelper(this.implicitAccounts),
+                  _step37;
 
               try {
-                for (_iterator38.s(); !(_step38 = _iterator38.n()).done;) {
-                  var implicitAccount = _step38.value;
+                for (_iterator37.s(); !(_step37 = _iterator37.n()).done;) {
+                  var implicitAccount = _step37.value;
 
                   if (implicitAccount.pkh === pkh) {
                     return implicitAccount;
                   }
                 }
               } catch (err) {
-                _iterator38.e(err);
+                _iterator37.e(err);
               } finally {
-                _iterator38.f();
+                _iterator37.f();
               }
             }
 
@@ -26140,21 +26149,21 @@
           key: "getTokenBalance",
           value: function getTokenBalance(tokenId) {
             if (this.tokens.length) {
-              var _iterator39 = _createForOfIteratorHelper(this.tokens),
-                  _step39;
+              var _iterator38 = _createForOfIteratorHelper(this.tokens),
+                  _step38;
 
               try {
-                for (_iterator39.s(); !(_step39 = _iterator39.n()).done;) {
-                  var token = _step39.value;
+                for (_iterator38.s(); !(_step38 = _iterator38.n()).done;) {
+                  var token = _step38.value;
 
                   if (tokenId === token.tokenId) {
                     return token.balance;
                   }
                 }
               } catch (err) {
-                _iterator39.e(err);
+                _iterator38.e(err);
               } finally {
-                _iterator39.f();
+                _iterator38.f();
               }
             }
 
@@ -28088,12 +28097,12 @@
               var peers = JSON.parse(peersJson);
 
               if (peers && peers.length > 0 && pairInfo.publicKey) {
-                var _iterator40 = _createForOfIteratorHelper(peers),
-                    _step40;
+                var _iterator39 = _createForOfIteratorHelper(peers),
+                    _step39;
 
                 try {
-                  for (_iterator40.s(); !(_step40 = _iterator40.n()).done;) {
-                    var peer = _step40.value;
+                  for (_iterator39.s(); !(_step39 = _iterator39.n()).done;) {
+                    var peer = _step39.value;
 
                     if (peer.publicKey && peer.publicKey === pairInfo.publicKey) {
                       newPublicKey = false;
@@ -28102,9 +28111,9 @@
                     }
                   }
                 } catch (err) {
-                  _iterator40.e(err);
+                  _iterator39.e(err);
                 } finally {
-                  _iterator40.f();
+                  _iterator39.f();
                 }
               }
             }
@@ -30372,18 +30381,18 @@
           key: "loadParameters",
           value: function loadParameters() {
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee116() {
-              var _iterator41, _step41, _step41$value, i, op;
+              var _iterator40, _step40, _step40$value, i, op;
 
               return regeneratorRuntime.wrap(function _callee116$(_context117) {
                 while (1) {
                   switch (_context117.prev = _context117.next) {
                     case 0:
                       if (this.transactions.length > 1) {
-                        _iterator41 = _createForOfIteratorHelper(this.transactions.entries());
+                        _iterator40 = _createForOfIteratorHelper(this.transactions.entries());
 
                         try {
-                          for (_iterator41.s(); !(_step41 = _iterator41.n()).done;) {
-                            _step41$value = _slicedToArray(_step41.value, 2), i = _step41$value[0], op = _step41$value[1];
+                          for (_iterator40.s(); !(_step40 = _iterator40.n()).done;) {
+                            _step40$value = _slicedToArray(_step40.value, 2), i = _step40$value[0], op = _step40$value[1];
 
                             if (op.parameters) {
                               this.batchParameters.push({
@@ -30397,9 +30406,9 @@
                             }
                           }
                         } catch (err) {
-                          _iterator41.e(err);
+                          _iterator40.e(err);
                         } finally {
-                          _iterator41.f();
+                          _iterator40.f();
                         }
                       } else if (this.transactions[0].parameters) {
                         this.updateParameters(0, this.transactions[0].parameters);
@@ -30490,18 +30499,18 @@
           value: function totalAmount() {
             var totalSent = big_js__WEBPACK_IMPORTED_MODULE_12___default()(0);
 
-            var _iterator42 = _createForOfIteratorHelper(this.transactions),
-                _step42;
+            var _iterator41 = _createForOfIteratorHelper(this.transactions),
+                _step41;
 
             try {
-              for (_iterator42.s(); !(_step42 = _iterator42.n()).done;) {
-                var tx = _step42.value;
+              for (_iterator41.s(); !(_step41 = _iterator41.n()).done;) {
+                var tx = _step41.value;
                 totalSent = totalSent.add(tx.amount);
               }
             } catch (err) {
-              _iterator42.e(err);
+              _iterator41.e(err);
             } finally {
-              _iterator42.f();
+              _iterator41.f();
             }
 
             return totalSent.toFixed();
@@ -30515,18 +30524,18 @@
 
             var totalFee = big_js__WEBPACK_IMPORTED_MODULE_12___default()(0);
 
-            var _iterator43 = _createForOfIteratorHelper(this.transactions),
-                _step43;
+            var _iterator42 = _createForOfIteratorHelper(this.transactions),
+                _step42;
 
             try {
-              for (_iterator43.s(); !(_step43 = _iterator43.n()).done;) {
-                var tx = _step43.value;
+              for (_iterator42.s(); !(_step42 = _iterator42.n()).done;) {
+                var tx = _step42.value;
                 totalFee = totalFee.add(tx.fee ? tx.fee : 0);
               }
             } catch (err) {
-              _iterator43.e(err);
+              _iterator42.e(err);
             } finally {
-              _iterator43.f();
+              _iterator42.f();
             }
 
             return totalFee.toFixed();
@@ -30536,18 +30545,18 @@
           value: function getTotalBurn() {
             var totalBurn = big_js__WEBPACK_IMPORTED_MODULE_12___default()(0);
 
-            var _iterator44 = _createForOfIteratorHelper(this.transactions),
-                _step44;
+            var _iterator43 = _createForOfIteratorHelper(this.transactions),
+                _step43;
 
             try {
-              for (_iterator44.s(); !(_step44 = _iterator44.n()).done;) {
-                var tx = _step44.value;
+              for (_iterator43.s(); !(_step43 = _iterator43.n()).done;) {
+                var tx = _step43.value;
                 totalBurn = totalBurn.add(tx.storageLimit ? tx.storageLimit : 0);
               }
             } catch (err) {
-              _iterator44.e(err);
+              _iterator43.e(err);
             } finally {
-              _iterator44.f();
+              _iterator43.f();
             }
 
             totalBurn = totalBurn.mul(this.transactions.length).times(this.costPerByte).div(1000000).toFixed();
@@ -30684,7 +30693,7 @@
                     case 0:
                       this.operationService.transfer(this.activeAccount.address, this.transactions, Number(this.getTotalFee()), keys, this.tokenTransfer).subscribe(function (ans) {
                         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this77, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee120() {
-                          var metadata, _iterator45, _step45, transaction;
+                          var metadata, _iterator44, _step44, transaction;
 
                           return regeneratorRuntime.wrap(function _callee120$(_context121) {
                             while (1) {
@@ -30722,18 +30731,18 @@
                                     this.torusNotification(this.transactions[0]);
                                   }
 
-                                  _iterator45 = _createForOfIteratorHelper(this.transactions);
+                                  _iterator44 = _createForOfIteratorHelper(this.transactions);
                                   _context121.prev = 12;
 
-                                  _iterator45.s();
+                                  _iterator44.s();
 
                                 case 14:
-                                  if ((_step45 = _iterator45.n()).done) {
+                                  if ((_step44 = _iterator44.n()).done) {
                                     _context121.next = 21;
                                     break;
                                   }
 
-                                  transaction = _step45.value;
+                                  transaction = _step44.value;
 
                                   if (!this.walletService.addressExists(transaction.destination)) {
                                     _context121.next = 19;
@@ -30755,12 +30764,12 @@
                                   _context121.prev = 23;
                                   _context121.t0 = _context121["catch"](12);
 
-                                  _iterator45.e(_context121.t0);
+                                  _iterator44.e(_context121.t0);
 
                                 case 26:
                                   _context121.prev = 26;
 
-                                  _iterator45.f();
+                                  _iterator44.f();
 
                                   return _context121.finish(26);
 
@@ -31503,19 +31512,19 @@
           key: "handleUnknownTokenIds",
           value: function handleUnknownTokenIds(unknownTokenIds) {
             if (unknownTokenIds.length) {
-              var _iterator46 = _createForOfIteratorHelper(unknownTokenIds),
-                  _step46;
+              var _iterator45 = _createForOfIteratorHelper(unknownTokenIds),
+                  _step45;
 
               try {
-                for (_iterator46.s(); !(_step46 = _iterator46.n()).done;) {
-                  var tokenId = _step46.value;
+                for (_iterator45.s(); !(_step45 = _iterator45.n()).done;) {
+                  var tokenId = _step45.value;
                   var tok = tokenId.split(':');
                   this.tokenService.searchMetadata(tok[0], tok[1]);
                 }
               } catch (err) {
-                _iterator46.e(err);
+                _iterator45.e(err);
               } finally {
-                _iterator46.f();
+                _iterator45.f();
               }
             }
           }
@@ -31523,18 +31532,18 @@
           key: "updateTokenBalances",
           value: function updateTokenBalances(account, tokens) {
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee126() {
-              var _iterator47, _step47, token, tokenId;
+              var _iterator46, _step46, token, tokenId;
 
               return regeneratorRuntime.wrap(function _callee126$(_context127) {
                 while (1) {
                   switch (_context127.prev = _context127.next) {
                     case 0:
                       if (tokens && tokens.length) {
-                        _iterator47 = _createForOfIteratorHelper(tokens);
+                        _iterator46 = _createForOfIteratorHelper(tokens);
 
                         try {
-                          for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
-                            token = _step47.value;
+                          for (_iterator46.s(); !(_step46 = _iterator46.n()).done;) {
+                            token = _step46.value;
                             tokenId = "".concat(token.contract, ":").concat(token.token_id);
 
                             if (tokenId) {
@@ -31542,9 +31551,9 @@
                             }
                           }
                         } catch (err) {
-                          _iterator47.e(err);
+                          _iterator46.e(err);
                         } finally {
-                          _iterator47.f();
+                          _iterator46.f();
                         }
                       }
 
@@ -31584,21 +31593,21 @@
                   console.log('# Excluded ' + counter);
                 }
 
-                var _iterator48 = _createForOfIteratorHelper(operations),
-                    _step48;
+                var _iterator47 = _createForOfIteratorHelper(operations),
+                    _step47;
 
                 try {
-                  for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
-                    var activity = _step48.value;
+                  for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
+                    var activity = _step47.value;
 
                     var counterParty = _this80.getCounterparty(activity, account, false);
 
                     _this80.lookupService.check(counterParty);
                   }
                 } catch (err) {
-                  _iterator48.e(err);
+                  _iterator47.e(err);
                 } finally {
-                  _iterator48.f();
+                  _iterator47.f();
                 }
               } else {
                 console.log(operations);
@@ -31614,12 +31623,12 @@
           value: function promptNewActivities(account, oldActivities, newActivities) {
             var _this81 = this;
 
-            var _iterator49 = _createForOfIteratorHelper(newActivities),
-                _step49;
+            var _iterator48 = _createForOfIteratorHelper(newActivities),
+                _step48;
 
             try {
               var _loop2 = function _loop2() {
-                var activity = _step49.value;
+                var activity = _step48.value;
                 var index = oldActivities.findIndex(function (a) {
                   return a.hash === activity.hash;
                 });
@@ -31659,13 +31668,13 @@
                 }
               };
 
-              for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
+              for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
                 _loop2();
               }
             } catch (err) {
-              _iterator49.e(err);
+              _iterator48.e(err);
             } finally {
-              _iterator49.f();
+              _iterator48.f();
             }
           }
         }, {
@@ -32243,7 +32252,7 @@
           key: "findContracts",
           value: function findContracts(pkh) {
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee133() {
-              var addresses, _iterator50, _step50, KT;
+              var addresses, _iterator49, _step49, KT;
 
               return regeneratorRuntime.wrap(function _callee133$(_context134) {
                 while (1) {
@@ -32254,18 +32263,18 @@
 
                     case 2:
                       addresses = _context134.sent;
-                      _iterator50 = _createForOfIteratorHelper(addresses);
+                      _iterator49 = _createForOfIteratorHelper(addresses);
 
                       try {
-                        for (_iterator50.s(); !(_step50 = _iterator50.n()).done;) {
-                          KT = _step50.value;
+                        for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
+                          KT = _step49.value;
                           console.log('Found KT: ' + KT);
                           this.walletService.addOriginatedAccount(KT, pkh);
                         }
                       } catch (err) {
-                        _iterator50.e(err);
+                        _iterator49.e(err);
                       } finally {
-                        _iterator50.f();
+                        _iterator49.f();
                       }
 
                       this.walletService.storeWallet();
@@ -32706,7 +32715,7 @@
           key: "isSupportedOperationRequest",
           value: function isSupportedOperationRequest(message) {
             return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee138() {
-              var _iterator51, _step51, op, i;
+              var _iterator50, _step50, op, i;
 
               return regeneratorRuntime.wrap(function _callee138$(_context139) {
                 while (1) {
@@ -32739,18 +32748,18 @@
                         break;
                       }
 
-                      _iterator51 = _createForOfIteratorHelper(message.operationDetails);
+                      _iterator50 = _createForOfIteratorHelper(message.operationDetails);
                       _context139.prev = 14;
 
-                      _iterator51.s();
+                      _iterator50.s();
 
                     case 16:
-                      if ((_step51 = _iterator51.n()).done) {
+                      if ((_step50 = _iterator50.n()).done) {
                         _context139.next = 25;
                         break;
                       }
 
-                      op = _step51.value;
+                      op = _step50.value;
 
                       if (!(op.kind !== 'transaction')) {
                         _context139.next = 23;
@@ -32776,18 +32785,18 @@
                       _context139.prev = 27;
                       _context139.t0 = _context139["catch"](14);
 
-                      _iterator51.e(_context139.t0);
+                      _iterator50.e(_context139.t0);
 
                     case 30:
                       _context139.prev = 30;
 
-                      _iterator51.f();
+                      _iterator50.f();
 
                       return _context139.finish(30);
 
                     case 33:
                       if (!(message.operationDetails[0].kind === 'transaction')) {
-                        _context139.next = 59;
+                        _context139.next = 65;
                         break;
                       }
 
@@ -32795,7 +32804,7 @@
 
                     case 35:
                       if (!(i < message.operationDetails.length)) {
-                        _context139.next = 57;
+                        _context139.next = 63;
                         break;
                       }
 
@@ -32826,7 +32835,7 @@
 
                     case 50:
                       if (!this.invalidParameters(message.operationDetails[i].parameters)) {
-                        _context139.next = 54;
+                        _context139.next = 56;
                         break;
                       }
 
@@ -32836,72 +32845,110 @@
                     case 53:
                       return _context139.abrupt("return", false);
 
-                    case 54:
+                    case 56:
+                      if (!this.invalidOptionals(message.operationDetails[i])) {
+                        _context139.next = 60;
+                        break;
+                      }
+
+                      _context139.next = 59;
+                      return this.beaconService.rejectOnParameters(message);
+
+                    case 59:
+                      return _context139.abrupt("return", false);
+
+                    case 60:
                       i++;
                       _context139.next = 35;
                       break;
 
-                    case 57:
-                      _context139.next = 77;
+                    case 63:
+                      _context139.next = 90;
                       break;
 
-                    case 59:
+                    case 65:
                       if (!(message.operationDetails[0].kind === 'delegation')) {
-                        _context139.next = 66;
+                        _context139.next = 72;
                         break;
                       }
 
                       if (message.operationDetails[0].delegate) {
-                        _context139.next = 64;
+                        _context139.next = 70;
                         break;
                       }
 
                       console.warn('Invalid delegate');
-                      _context139.next = 64;
+                      _context139.next = 70;
                       return this.beaconService.rejectOnUnknown(message);
 
-                    case 64:
-                      _context139.next = 77;
+                    case 70:
+                      _context139.next = 90;
                       break;
 
-                    case 66:
+                    case 72:
                       if (!(message.operationDetails[0].kind === 'origination')) {
-                        _context139.next = 73;
+                        _context139.next = 86;
                         break;
                       }
 
                       if (message.operationDetails[0].script) {
-                        _context139.next = 71;
+                        _context139.next = 80;
                         break;
                       }
 
                       console.warn('No script found');
-                      _context139.next = 71;
+                      _context139.next = 77;
                       return this.beaconService.rejectOnParameters(message);
 
-                    case 71:
-                      _context139.next = 77;
-                      break;
-
-                    case 73:
-                      console.warn('Unsupported operation kind');
-                      _context139.next = 76;
-                      return this.beaconService.rejectOnUnknown(message);
-
-                    case 76:
+                    case 77:
                       return _context139.abrupt("return", false);
 
-                    case 77:
+                    case 80:
+                      if (!this.invalidOptionals(message.operationDetails[0])) {
+                        _context139.next = 84;
+                        break;
+                      }
+
+                      _context139.next = 83;
+                      return this.beaconService.rejectOnParameters(message);
+
+                    case 83:
+                      return _context139.abrupt("return", false);
+
+                    case 84:
+                      _context139.next = 90;
+                      break;
+
+                    case 86:
+                      console.warn('Unsupported operation kind');
+                      _context139.next = 89;
+                      return this.beaconService.rejectOnUnknown(message);
+
+                    case 89:
+                      return _context139.abrupt("return", false);
+
+                    case 90:
                       this.activeAccount = this.walletService.wallet.getImplicitAccount(message.sourceAddress);
                       return _context139.abrupt("return", true);
 
-                    case 79:
+                    case 92:
                     case "end":
                       return _context139.stop();
                   }
                 }
               }, _callee138, this, [[14, 27, 30, 33]]);
             }));
+          }
+        }, {
+          key: "invalidOptionals",
+          value: function invalidOptionals(op) {
+            if (op.gas_limit && (typeof op.gas_limit !== 'string' || !this.inputValidationService.amount(op.gas_limit, 0))) {
+              return true;
+            } else if (op.storage_limit && (typeof op.storage_limit !== 'string' || !this.inputValidationService.amount(op.storage_limit, 0))) {
+              return true;
+            }
+
+            return false;
           }
         }, {
           key: "isSupportedSignPayload",
@@ -35539,18 +35586,18 @@
         _createClass(BalanceService, [{
           key: "getBalanceAll",
           value: function getBalanceAll() {
-            var _iterator52 = _createForOfIteratorHelper(this.walletService.wallet.getAccounts()),
-                _step52;
+            var _iterator51 = _createForOfIteratorHelper(this.walletService.wallet.getAccounts()),
+                _step51;
 
             try {
-              for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
-                var account = _step52.value;
+              for (_iterator51.s(); !(_step51 = _iterator51.n()).done;) {
+                var account = _step51.value;
                 this.getAccountBalance(account);
               }
             } catch (err) {
-              _iterator52.e(err);
+              _iterator51.e(err);
             } finally {
-              _iterator52.f();
+              _iterator51.f();
             }
           }
         }, {
@@ -35583,12 +35630,12 @@
             var balance = 0;
             var change = false;
 
-            var _iterator53 = _createForOfIteratorHelper(this.walletService.wallet.getAccounts()),
-                _step53;
+            var _iterator52 = _createForOfIteratorHelper(this.walletService.wallet.getAccounts()),
+                _step52;
 
             try {
-              for (_iterator53.s(); !(_step53 = _iterator53.n()).done;) {
-                var account = _step53.value;
+              for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
+                var account = _step52.value;
 
                 if (!(account.balanceXTZ === null || account.balanceXTZ === undefined)) {
                   balance = balance + Number(account.balanceXTZ);
@@ -35596,9 +35643,9 @@
                 }
               }
             } catch (err) {
-              _iterator53.e(err);
+              _iterator52.e(err);
             } finally {
-              _iterator53.f();
+              _iterator52.f();
             }
 
             if (change) {

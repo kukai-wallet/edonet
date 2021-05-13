@@ -3658,7 +3658,11 @@ class OriginateComponent {
                     this.openModal();
                     this.balance = big_js__WEBPACK_IMPORTED_MODULE_9___default()(this.operationRequest.operationDetails[0].balance).div(Math.pow(10, 6)).toFixed();
                     this.script = this.operationRequest.operationDetails[0].script;
-                    this.estimateFees();
+                    const recommendations = {
+                        gasRecommendation: this.operationRequest.operationDetails[0].gas_limit ? this.operationRequest.operationDetails[0].gas_limit : undefined,
+                        storageRecommendation: this.operationRequest.operationDetails[0].storage_limit ? this.operationRequest.operationDetails[0].storage_limit : undefined
+                    };
+                    this.estimateFees(recommendations);
                 }
                 else {
                     console.warn('Invalid origination');
@@ -3696,7 +3700,7 @@ class OriginateComponent {
         }
         return true;
     }
-    estimateFees() {
+    estimateFees(recommendations = {}) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
             const callback = (res) => {
                 if (res) {
@@ -3712,7 +3716,7 @@ class OriginateComponent {
             };
             this.simSemaphore++;
             yield this.estimateService.preLoadData(this.activeAccount.pkh, this.activeAccount.pk);
-            this.estimateService.estimateOrigination(this.getOrigination(), this.activeAccount.pkh, callback);
+            this.estimateService.estimateOrigination(Object.assign(Object.assign({}, this.getOrigination()), recommendations), this.activeAccount.pkh, callback);
         });
     }
     getOrigination() {
@@ -6805,7 +6809,9 @@ class SendComponent {
                         kind: 'transaction',
                         destination: tx.destination,
                         amount: big_js__WEBPACK_IMPORTED_MODULE_8___default()(tx.amount).div(Math.pow(10, 6)).toFixed(),
-                        parameters: tx.parameters ? tx.parameters : undefined
+                        parameters: tx.parameters ? tx.parameters : undefined,
+                        gasRecommendation: tx.gas_limit ? tx.gas_limit : undefined,
+                        storageRecommendation: tx.storage_limit ? tx.storage_limit : undefined
                     };
                 });
                 if (this.validParameters(txs)) {
@@ -11057,6 +11063,7 @@ __webpack_require__.r(__webpack_exports__);
 const httpOptions = { headers: { 'Content-Type': 'application/json' } };
 const hardGasLimit = 1040000;
 const hardStorageLimit = 60000;
+const extraGas = 80;
 class EstimateService {
     constructor(http, operationService) {
         this.http = http;
@@ -11126,8 +11133,8 @@ class EstimateService {
         });
     }
     _estimate(operations, from, tokenTransfer, isOrigination = false) {
+        var _a;
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
-            const extraGas = 80;
             if (!this.hash) {
                 return null;
             }
@@ -11159,12 +11166,14 @@ class EstimateService {
                 if (result && result.contents) {
                     let reveal = false;
                     const limits = [];
-                    for (const content of result.contents) {
-                        if (content.kind === 'reveal') {
+                    for (const i in result.contents) {
+                        if (result.contents[i].kind === 'reveal') {
                             reveal = true;
                         }
-                        else if (['transaction', 'origination'].includes(content.kind) && content.metadata.operation_result.status === 'applied') {
-                            const { gasUsage, storageUsage } = this.getOpUsage(content);
+                        else if (['transaction', 'origination'].includes(result.contents[i].kind) && result.contents[i].metadata.operation_result.status === 'applied') {
+                            const index = Number(i) + ((((_a = result.contents[0]) === null || _a === void 0 ? void 0 : _a.kind) === 'reveal') ? -1 : 0);
+                            const opObj = index > -1 ? operations[index] : null;
+                            const { gasUsage, storageUsage } = this.getOpUsage(result.contents[i], opObj);
                             limits.push({ gasLimit: gasUsage + extraGas, storageLimit: storageUsage });
                         }
                         else {
@@ -11188,7 +11197,7 @@ class EstimateService {
             return null;
         });
     }
-    getOpUsage(content) {
+    getOpUsage(content, op) {
         let gasUsage = 0;
         let burn = big_js__WEBPACK_IMPORTED_MODULE_6___default()(0);
         if (content.source && content.source === this.pkh) {
@@ -11234,7 +11243,7 @@ class EstimateService {
         if (gasUsage < 0 || gasUsage > hardGasLimit || storageUsage < 0 || storageUsage > hardStorageLimit) {
             throw new Error('InvalidUsageCalculation');
         }
-        const customUsage = this.getUsageException(content);
+        const customUsage = this.getUsageException(content, op);
         if (customUsage) {
             // if there is a usageException then override values
             return Object.assign({ gasUsage, storageUsage }, customUsage);
@@ -11289,7 +11298,7 @@ class EstimateService {
             return Object(rxjs__WEBPACK_IMPORTED_MODULE_5__["of"])(res);
         })).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["catchError"])(err => this.operationService.errHandler(err)));
     }
-    getUsageException(content) {
+    getUsageException(content, op) {
         var _a;
         const entrypoint = (_a = content === null || content === void 0 ? void 0 : content.parameters) === null || _a === void 0 ? void 0 : _a.entrypoint;
         const destination = content === null || content === void 0 ? void 0 : content.destination;
@@ -11298,6 +11307,17 @@ class EstimateService {
             if (contractOverride) {
                 return contractOverride;
             }
+        }
+        if ((op === null || op === void 0 ? void 0 : op.gasRecommendation) || (op === null || op === void 0 ? void 0 : op.storageRecommendation)) {
+            const override = {};
+            if (op.gasRecommendation) {
+                override.gasUsage = Number(op.gasRecommendation) - extraGas;
+            }
+            if (op.storageRecommendation) {
+                override.storageUsage = Number(op.storageRecommendation);
+            }
+            console.log('Dapp recommendation', { gas: op.gasRecommendation, storage: op.storageRecommendation });
+            return override;
         }
         return null;
     }
@@ -17872,6 +17892,10 @@ class UriHandlerComponent {
                         yield this.beaconService.rejectOnParameters(message);
                         return false;
                     }
+                    else if (this.invalidOptionals(message.operationDetails[i])) {
+                        yield this.beaconService.rejectOnParameters(message);
+                        return false;
+                    }
                 }
             }
             else if (message.operationDetails[0].kind === 'delegation') {
@@ -17884,6 +17908,11 @@ class UriHandlerComponent {
                 if (!message.operationDetails[0].script) {
                     console.warn('No script found');
                     yield this.beaconService.rejectOnParameters(message);
+                    return false;
+                }
+                else if (this.invalidOptionals(message.operationDetails[0])) {
+                    yield this.beaconService.rejectOnParameters(message);
+                    return false;
                 }
             }
             else {
@@ -17894,6 +17923,15 @@ class UriHandlerComponent {
             this.activeAccount = this.walletService.wallet.getImplicitAccount(message.sourceAddress);
             return true;
         });
+    }
+    invalidOptionals(op) {
+        if (op.gas_limit && (typeof op.gas_limit !== 'string' || !this.inputValidationService.amount(op.gas_limit, 0))) {
+            return true;
+        }
+        else if (op.storage_limit && (typeof op.storage_limit !== 'string' || !this.inputValidationService.amount(op.storage_limit, 0))) {
+            return true;
+        }
+        return false;
     }
     isSupportedSignPayload(message) {
         return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(this, void 0, void 0, function* () {
